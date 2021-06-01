@@ -15,8 +15,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 class SebraParser:
-    def __init__(self, data_url, file_location, chrome_path, folders, min_year, min_month,min_day) -> None:
-        self.url = data_url
+    def __init__(self, file_location, chrome_path, folders, min_year, min_month,min_day) -> None:
+        
         self.path = file_location
         self.chrome_exec_path = chrome_path
         self.min_year = min_year
@@ -46,7 +46,7 @@ class SebraParser:
                         pass
             else:
                 try:
-                    os.mkdir(self.path + folder)
+                    os.makedirs(self.path + folder)
                     print ("Successfully created the directory: ", self.path + folder)
                 except OSError:
                     print ("Failure creation of the directory:", self.path + folder)
@@ -78,7 +78,7 @@ class SebraParser:
             min_year = max_imported_date.year
 
         #starting date to search for data
-        start_date = date(min_year,min_month, min_day) #2011-07-22
+        start_date = date(self.min_year,self.min_month, self.min_day) #2011-07-22
         end_date = datetime.now().date() #date(2021, 12, 31)
         
         assert start_date <= end_date,'Start date {} is not before end date {}'.format(start_date,end_date)
@@ -214,3 +214,16 @@ class SebraParser:
             remove_from_local (bool, optional): Flag to remove all files from the local directory. Defaults to True.
         """
         pass
+
+
+def main():
+    file_loc = './downloaded_files'
+    folders = ['/SEBRA']#['/SEBRA','/NF_SEBRA','/MF_SEBRA']
+    min_year = 2021
+    min_month = 5
+    min_day = 15
+    chrome_path = '/usr/local/bin/chromedriver'
+    sp = SebraParser(file_loc, chrome_path, folders, min_year, min_month, min_day)
+
+    sp.get_urls()
+    sp.download_reports()
