@@ -8,3 +8,5 @@ client_secrets.json
 service_acct.json
 *.xlsx
 *.xls
+downloaded_files/parsed_drive_file.csv
+*.csv
