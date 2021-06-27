@@ -6,6 +6,7 @@ import time
 
 from datetime import date,datetime
 import pandas as pd
+from pandas.core.indexes.api import get_objs_combined_axis
 import requests
 from bs4 import BeautifulSoup
 import pickle
@@ -19,6 +20,64 @@ import numpy as np
 import os
 
 from gdrive_manage import GDriveManager
+from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
+from mimetypes import MimeTypes
+
+class SebraGDrive:
+    def __init__(self, credentials_file, scopes, main_folder_id, raw_data_folder_id, parsed_data_folder_id) -> None:
+        self.main_folder_id = main_folder_id
+        self.credentials_file = credentials_file
+        self.scopes = scopes
+        self.raw_data_folder_id = raw_data_folder_id
+        self.parsed_data_folder_id = parsed_data_folder_id
+
+        self.GDM = GDriveManager(self.credentials_file, self.scopes)
+        self.GDM.create_gdrive_service()
+
+    def download_parsed_file(self, fname):
+        parsed_file = self.GDM.search_by_fname(fname, self.parsed_data_folder_id, exact=False)
+        self.parsed_id = parsed_file['id'][0]
+        self.GDM.download_by_file_id(self.parsed_id, f'downloaded_files/{fname}')
+
+    def read_parsed_file(self, fname):
+        self.parsed_df = pd.read_csv(f'downloaded_files/{fname}')
+        parsed_df = self.parsed_df.copy()
+        parsed_df['Start Date'] = pd.to_datetime(parsed_df['Start Date'], format='%d.%m.%Y', errors = 'coerce')
+        self.max_date = parsed_df['Start Date'].max() + pd.DateOffset(1)
+        self.min_year = self.max_date.year
+        self.min_month = self.max_date.month
+        self.min_day = self.max_date.day
+
+    def append_parsed_df(self, new_parsed_df):
+        self.parsed_df = pd.concat([self.parsed_df, new_parsed_df])
+        self.parsed_df.to_csv('downloaded_files/parsed_drive_file.csv', index=False)
+
+    def upload_raw_files(self, raw_file_list):
+        for fname in raw_file_list:
+            name = fname.split('/')[-1]
+            try:
+                self.GDM.upload_to_target_drive(fname, name, self.raw_data_folder_id)
+                os.remove(fname)
+            except:
+                print(f'Cannot upload file {name}')
+                continue
+
+    def upload_parsed_file(self, source_location, parsed_fname):
+        file_metadata = {'name': parsed_fname,
+        'fileId': self.parsed_id}
+
+        mimetype = MimeTypes().guess_type(parsed_fname)[0]
+        media = MediaFileUpload(f'{source_location}/{parsed_fname}', mimetype=mimetype,
+                        resumable=True)
+        try:
+            self.GDM.service.files().update(
+                    body=file_metadata, media_body=media, fields='id', fileId = self.parsed_id, 
+                    supportsAllDrives=True).execute()
+            
+            print('Parsed File Updated')
+            os.remove(f'{source_location}/{parsed_fname}')
+        except:
+            raise Exception("Can't Upload File.")
 
 class SebraDownloader:
     def __init__(self, file_location, chrome_path, folders, min_year, min_month,min_day) -> None:
@@ -36,9 +95,6 @@ class SebraDownloader:
         self.issues_rename = {}
         self.soups = {}
         self.processed_files = 0
-
-    def download_parsed_file_from_gcloud():
-        pass
 
     def get_urls(self):
     #max date always current date
@@ -79,13 +135,13 @@ class SebraDownloader:
                 pass
 
         # if there are already imported files, re-assign     
-        if len(imported_dates) == 0:
-            pass
-        else:
-            max_imported_date = max(imported_dates)
-            self.min_day = max_imported_date.day
-            self.min_month = max_imported_date.month
-            self.min_year = max_imported_date.year
+        # if len(imported_dates) == 0:
+        #     pass
+        # else:
+        #     max_imported_date = max(imported_dates)
+        #     self.min_day = max_imported_date.day
+        #     self.min_month = max_imported_date.month
+        #     self.min_year = max_imported_date.year
 
         #starting date to search for data
         start_date = date(self.min_year,self.min_month, self.min_day) #2011-07-22
@@ -201,16 +257,6 @@ class SebraDownloader:
         with open(self.path + '/'+ name, 'wb') as config_dictionary_file:
             pickle.dump(dates_meta, config_dictionary_file)
 
-    def upload_to_gc(self, remove_from_local = True):
-        """
-        Uploads raw reports and the combined data into relevant GCloud folder
-
-        [extended_summary]
-
-        Args:
-            remove_from_local (bool, optional): Flag to remove all files from the local directory. Defaults to True.
-        """
-        pass
 
 
 class SebraParser:
@@ -394,49 +440,75 @@ class SebraParser:
         dfs = []
         for i, f in enumerate(excel_files):
             print(i, f)
-
+            try:
             # Read data
-            self.read_into_df(f)
+                self.read_into_df(f)
 
-            # get the row that indicates the start of the organizations section
-            org_start_row = self.find_organizations_start_row(f)
-            
-            # get the start and end rows for all blocks of operations
-            op_blocks = self.find_operations_blocks(org_start_row, f)
-            
-            # parse the data containing the general totals for all operations in the file
-            # (we will use those just to check the sums at the end for correctness)
-            general_block_df = self.get_general_totals(op_blocks['general'][0], f)
-            
-            # parse all operations by organization in the file
-            ops_df = self.get_organization_operations_blocks(op_blocks['organizations'], f)
-            
-            # check if the sums for all opearions by organization match the general totals
-            self.check_sums(ops_df, general_block_df, f)
+                # get the row that indicates the start of the organizations section
+                org_start_row = self.find_organizations_start_row(f)
+                
+                # get the start and end rows for all blocks of operations
+                op_blocks = self.find_operations_blocks(org_start_row, f)
+                
+                # parse the data containing the general totals for all operations in the file
+                # (we will use those just to check the sums at the end for correctness)
+                general_block_df = self.get_general_totals(op_blocks['general'][0], f)
+                
+                # parse all operations by organization in the file
+                ops_df = self.get_organization_operations_blocks(op_blocks['organizations'], f)
+                
+                # check if the sums for all opearions by organization match the general totals
+                self.check_sums(ops_df, general_block_df, f)
 
-            # extract the Organization ID from the Name
-            ops_df['Organization ID'] = ops_df['Organization Name'].str.findall(r'\((.*?)\)').map(
-                lambda x: x[-1].strip() if len(x) > 0 else np.nan
-            )
+                # extract the Organization ID from the Name
+                ops_df['Organization ID'] = ops_df['Organization Name'].str.findall(r'\((.*?)\)').map(
+                    lambda x: x[-1].strip() if len(x) > 0 else np.nan
+                )
+            except:
+                ops_df = None
 
             dfs.append(ops_df)
         
         df = pd.concat(dfs)
         return df
-        
+
+
 
 def main():
+
+
+    chrome_path = '/usr/local/bin/chromedriver'
     file_loc = './downloaded_files'
     folders = ['/SEBRA']#['/SEBRA','/NF_SEBRA','/MF_SEBRA']
-    min_year = 2020
-    min_month = 6
-    min_day = 20
-    chrome_path = '/usr/local/bin/chromedriver'
 
+    # Download Parsed File from GDrive and Get Final Dates
+    SCOPES = ['https://www.googleapis.com/auth/drive']
+    main_project_drive_id = '1d00Cr5im5NMu0EMy6i4FEm21Xwmyic4Y'
+    raw_data_folder_id = '1u86__jBzkjziESrKsJt791FJ4TE3NQR3'
+    parsed_data_folder_id = '1TJUKdFUnPyCnhObCSAydYQb3iPt8fE7n'
+    parsed_fname = 'sebra_parsed.csv'
+
+    SGD = SebraGDrive('service_acct.json', SCOPES,
+        main_project_drive_id,
+        raw_data_folder_id,
+        parsed_data_folder_id)
+    SGD.download_parsed_file(parsed_fname) 
+    
+    min_year = SGD.min_year
+    min_month = SGD.min_month
+    min_day = SGD.min_day
     sd = SebraDownloader(file_loc, chrome_path, folders, 
         min_year, min_month, min_day)
     sd.get_urls()
     sd.download_reports()
+    
 
     sp = SebraParser(sd.parent_location)
     ops_df = sp.run_parser()
+    SGD.read_parsed_file(parsed_fname)
+    SGD.append_parsed_df(ops_df)
+    SGD.parsed_df.to_csv(f'{file_loc}/{parsed_fname}')
+    raw_files = sp.get_all_excel_files()
+    SGD.upload_raw_files(raw_files)
+    
+    

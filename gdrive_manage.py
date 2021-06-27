@@ -12,7 +12,6 @@ from google.oauth2 import service_account
 import pandas as pd
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/drive']
 
 class GDriveManager:
     def __init__(self, credentials_file, scopes) -> None:
@@ -25,18 +24,24 @@ class GDriveManager:
 
         self.service = build('drive', 'v3', credentials=credentials)
 
-    def search_by_fname(self, filename, exact = False):
+    def search_by_fname(self, filename, foldername = None, exact = False):
         if exact:
-            results = self.service.files().list(q=f"name='{filename}'",
-                    includeItemsFromAllDrives=True, supportsAllDrives=True, 
-                    fields='nextPageToken, files(id, name)',
-                    pageToken=None).execute()
+
+            if foldername is not None:
+                qry = f"name='{filename}' and '{foldername}' in parents"
+            else:
+                qry = f"name='{filename}'"
         
         else:
-            results = self.service.files().list(q=f"name contains '{filename}'",
-                    includeItemsFromAllDrives=True, supportsAllDrives=True, 
-                    fields='nextPageToken, files(id, name)',
-                    pageToken=None).execute()
+            if foldername is not None:
+                qry = f"name contains '{filename}' and '{foldername}' in parents"
+            else:
+                qry = f"name contains '{filename}'"
+        
+        results = self.service.files().list(q=qry,
+                includeItemsFromAllDrives=True, supportsAllDrives=True, 
+                fields='nextPageToken, files(id, name)',
+                pageToken=None).execute()
 
         
         items = results.get('files', [])
@@ -76,15 +81,20 @@ class GDriveManager:
             # Return False if something went wrong
             print("Something went wrong.")
 
-    def upload_to_target_drive(self, source_fname, destination_fname, folder_id):
+    def upload_to_target_drive(self, source_fname, destination_fname, folder_id, file_id = None):
         name = source_fname.split('/')[-1]
           
         # Find the MimeType of the file
         mimetype = MimeTypes().guess_type(name)[0]
           
         # create file metadata
-        file_metadata = {'name': destination_fname,
-            'parents': [folder_id]}
+        if file_id is None:
+            file_metadata = {'name': destination_fname,
+                'parents': [folder_id]}
+        else:
+            file_metadata = {'name': destination_fname,
+                'parents': [folder_id], 
+                'id': file_id}
   
         try:
             media = MediaFileUpload(source_fname, mimetype=mimetype,
