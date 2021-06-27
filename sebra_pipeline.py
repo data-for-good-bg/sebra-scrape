@@ -18,6 +18,8 @@ import pandas as pd
 import numpy as np
 import os
 
+from gdrive_manage import GDriveManager
+
 class SebraDownloader:
     def __init__(self, file_location, chrome_path, folders, min_year, min_month,min_day) -> None:
         
@@ -427,8 +429,8 @@ def main():
     file_loc = './downloaded_files'
     folders = ['/SEBRA']#['/SEBRA','/NF_SEBRA','/MF_SEBRA']
     min_year = 2020
-    min_month = 1
-    min_day = 1
+    min_month = 6
+    min_day = 20
     chrome_path = '/usr/local/bin/chromedriver'
 
     sd = SebraDownloader(file_loc, chrome_path, folders, 
