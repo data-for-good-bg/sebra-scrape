@@ -35,6 +35,9 @@ class SebraDownloader:
         self.soups = {}
         self.processed_files = 0
 
+    def download_parsed_file_from_gcloud():
+        pass
+
     def get_urls(self):
     #max date always current date
         max_year = datetime.now().date().year
@@ -428,7 +431,8 @@ def main():
     min_day = 1
     chrome_path = '/usr/local/bin/chromedriver'
 
-    sd = SebraDownloader(file_loc, chrome_path, folders, min_year, min_month, min_day)
+    sd = SebraDownloader(file_loc, chrome_path, folders, 
+        min_year, min_month, min_day)
     sd.get_urls()
     sd.download_reports()
 
