@@ -10,3 +10,4 @@ service_acct.json
 *.xls
 downloaded_files/parsed_drive_file.csv
 *.csv
+*.pyc
