@@ -494,9 +494,9 @@ def main():
         parsed_data_folder_id)
     SGD.download_parsed_file(parsed_fname) 
     
-    min_year = SGD.min_year
-    min_month = SGD.min_month
-    min_day = SGD.min_day
+    min_year = 2021
+    min_month = 1
+    min_day = 1
     sd = SebraDownloader(file_loc, chrome_path, folders, 
         min_year, min_month, min_day)
     sd.get_urls()
@@ -510,5 +510,7 @@ def main():
     SGD.parsed_df.to_csv(f'{file_loc}/{parsed_fname}')
     raw_files = sp.get_all_excel_files()
     SGD.upload_raw_files(raw_files)
+    SGD.upload_parsed_file(file_loc, parsed_fname)
+    
     
     
