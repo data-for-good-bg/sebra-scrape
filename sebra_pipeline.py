@@ -72,9 +72,10 @@ def main():
     file_loc = './downloaded_files'
     folders = ['/SEBRA']#['/SEBRA','/NF_SEBRA','/MF_SEBRA']
     parsed_fname = 'sebra_parsed.csv'
+    service_acct_file = 'service_acct.json'
 
     SebraPipe = SebraPipeline(chrome_path, file_loc, folders, parsed_fname)
-    SebraPipe.initialize_sebra_gdrive('service_acct.json', SCOPES)
+    SebraPipe.initialize_sebra_gdrive(service_acct_file, SCOPES)
     SebraPipe.download_parsed_file_from_gdrive()
     SebraPipe.download_new_reports()
     SebraPipe.parse_new_reports()
