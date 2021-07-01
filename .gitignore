@@ -1,0 +1,14 @@
+Data
+.ipynb_checkpoints
+.DS_Store
+.vscode/settings.json
+client_secret_1064993878281-8rj8d9vjq1nvqjelerptfo4fquocanuc.apps.googleusercontent.com.json
+client_secret.json
+client_secrets.json
+service_acct.json
+*.xlsx
+*.xls
+downloaded_files/parsed_drive_file.csv
+*.csv
+*.pyc
+.env
