@@ -10,6 +10,9 @@ USR = os.environ.get("USR")
 PASS = os.environ.get("PASS")
 HOST = os.environ.get("HOST")
 PORT = os.environ.get("PORT")
+main_project_drive_id = os.environ.get("main_project_drive_id")
+raw_data_folder_id = os.environ.get("raw_data_folder_id")
+parsed_data_folder_id = os.environ.get("parsed_data_folder_id")
 
 
 postgres_proj_str = f'postgresql://{USR}:{PASS}@{HOST}:{PORT}/{PROJECT_DB}'
