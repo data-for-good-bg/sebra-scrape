@@ -11,3 +11,4 @@ service_acct.json
 downloaded_files/parsed_drive_file.csv
 *.csv
 *.pyc
+.env

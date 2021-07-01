@@ -1,12 +1,11 @@
-import sys
 import os
 import time
+
 
 #!{sys.executable} -m pip install scrapy
 
 from datetime import date,datetime
 import pandas as pd
-from pandas.core.indexes.api import get_objs_combined_axis
 import requests
 from bs4 import BeautifulSoup
 import pickle
@@ -20,8 +19,15 @@ import numpy as np
 import os
 
 from gdrive_manage import GDriveManager
-from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
+from googleapiclient.http import MediaFileUpload
 from mimetypes import MimeTypes
+from sqlalchemy import create_engine
+from settings import postgres_proj_str
+
+def fix_dates(df):
+    df['Start Date'] = pd.to_datetime(df['Start Date'], format='%d.%m.%Y', errors = 'coerce')
+    df['End Date'] = pd.to_datetime(df['End Date'], format='%d.%m.%Y', errors = 'coerce')
+    return df
 
 class SebraGDrive:
     def __init__(self, credentials_file, scopes, main_folder_id, raw_data_folder_id, parsed_data_folder_id) -> None:
@@ -51,6 +57,12 @@ class SebraGDrive:
     def append_parsed_df(self, new_parsed_df):
         self.parsed_df = pd.concat([self.parsed_df, new_parsed_df])
         self.parsed_df.to_csv('downloaded_files/parsed_drive_file.csv', index=False)
+
+    
+    def fix_dates(self):
+        self.parsed_df['Start Date'] = pd.to_datetime(self.parsed_df['Start Date'], format='%d.%m.%Y', errors = 'coerce')
+        self.parsed_df['End Date'] = pd.to_datetime(self.parsed_df['End Date'], format='%d.%m.%Y', errors = 'coerce')
+        
 
     def upload_raw_files(self, raw_file_list):
         for fname in raw_file_list:
@@ -480,6 +492,8 @@ def main():
     chrome_path = '/usr/local/bin/chromedriver'
     file_loc = './downloaded_files'
     folders = ['/SEBRA']#['/SEBRA','/NF_SEBRA','/MF_SEBRA']
+    cnx = create_engine(postgres_proj_str, paramstyle="format")
+    sebra_dates = pd.read_sql('select max("Start Date") as final_date from sebra_parsed', cnx)
 
     # Download Parsed File from GDrive and Get Final Dates
     SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -494,9 +508,11 @@ def main():
         parsed_data_folder_id)
     SGD.download_parsed_file(parsed_fname) 
     
-    min_year = 2021
-    min_month = 1
-    min_day = 1
+    min_year = sebra_dates['final_date'][0].year
+    min_month = sebra_dates['final_date'][0].month
+    min_day = sebra_dates['final_date'][0].day
+
+
     sd = SebraDownloader(file_loc, chrome_path, folders, 
         min_year, min_month, min_day)
     sd.get_urls()
@@ -507,7 +523,13 @@ def main():
     ops_df = sp.run_parser()
     SGD.read_parsed_file(parsed_fname)
     SGD.append_parsed_df(ops_df)
+    SGD.fix_dates()
+    ops_df = fix_dates(ops_df)
     SGD.parsed_df.to_csv(f'{file_loc}/{parsed_fname}')
+
+    ops_df.reset_index().to_sql(os.path.splitext(parsed_fname)[0], 
+        cnx, index=False, if_exists='append', method='multi')
+
     raw_files = sp.get_all_excel_files()
     SGD.upload_raw_files(raw_files)
     SGD.upload_parsed_file(file_loc, parsed_fname)
