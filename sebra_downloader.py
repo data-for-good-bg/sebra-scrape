@@ -18,13 +18,14 @@ import pandas as pd
 
 
 class SebraDownloader:
-    def __init__(self, file_location, chrome_path, folders, min_year, min_month,min_day) -> None:
+    def __init__(self, file_location, chrome_path, folders, dates) -> None:
         
         self.path = file_location
         self.chrome_exec_path = chrome_path
-        self.min_year = min_year
-        self.min_month = min_month
-        self.min_day = min_day
+        min_date = pd.to_datetime(min(dates))
+        self.min_year = min_date.year
+        self.min_month = min_date.month
+        self.min_day = min_date.day
         self.folders = folders
         
 
@@ -33,6 +34,7 @@ class SebraDownloader:
         self.issues_rename = {}
         self.soups = {}
         self.processed_files = 0
+        self.dates = dates
 
     def get_urls(self):
     #max date always current date
@@ -92,17 +94,16 @@ class SebraDownloader:
         print('End date selected: {}'.format(end_date))
         
         #defines the date range: weekends are not included (normally no data is expected here)
-        dates =[str(date.date()) for date in pd.date_range(start  = start_date, end = end_date, periods = None, freq='B')]
+        
 
         ## extract the urls with the relevant dates
         urls = {}
-        for d in dates:
+        for d in self.dates:
             url = 'https://www.minfin.bg/bg/transparency/' + d
             urls[d] = url
         print('All relevant urls to be crawled for the specified period exported')
 
         self.urls = urls
-        self.dates = dates
         self.start_date = start_date
         self.end_date = end_date
         
@@ -120,7 +121,6 @@ class SebraDownloader:
                 year = d[:4]
                 
                 html = s.get(self.urls[d])
-                print(html.status_code)
 
                 if html.status_code != 200:
                     self.issues_requests[d] = 'Status request: ' + str(html.status_code)

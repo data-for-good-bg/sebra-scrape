@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-import os
+from datetime import datetime
 
 from sqlalchemy import create_engine
 from settings import postgres_proj_str, main_project_drive_id, raw_data_folder_id, parsed_data_folder_id
@@ -21,11 +21,14 @@ class SebraPipeline:
         self.folders = folders
         self.cnx = create_engine(postgres_proj_str, paramstyle="format")
         self.parsed_fname = parsed_fname
+
+        date_range = pd.date_range(start="2019-01-01",end=str(datetime.now().date()))
     
-        self.sebra_dates = pd.read_sql('select max("Start Date") as final_date from sebra_parsed', self.cnx)
-        self.min_year = self.sebra_dates['final_date'][0].year
-        self.min_month = self.sebra_dates['final_date'][0].month
-        self.min_day = self.sebra_dates['final_date'][0].day
+        self.sebra_dates = pd.read_sql('select("Start Date") as final_date from sebra_parsed', self.cnx)
+        self.missing_dates = set(date_range.astype(str)).difference(self.sebra_dates.final_date.astype(str).values)
+        # self.min_year = self.sebra_dates['final_date'][0].year
+        # self.min_month = self.sebra_dates['final_date'][0].month
+        # self.min_day = self.sebra_dates['final_date'][0].day
 
         # Download Parsed File from GDrive and Get Final Dates
     def initialize_sebra_gdrive(self,service_acct_file, SCOPES):
@@ -41,7 +44,7 @@ class SebraPipeline:
 
     def download_new_reports(self):
         self.sd = SebraDownloader(self.file_loc, self.chrome_path, self.folders, 
-        self.min_year, self.min_month, self.min_day)
+        self.missing_dates)
         self.sd.get_urls()
         self.sd.download_reports()
 
@@ -69,7 +72,7 @@ class SebraPipeline:
 
 def main():
     SCOPES = ['https://www.googleapis.com/auth/drive']
-    chrome_path = '/usr/local/bin/chromedriver'
+    chrome_path = '/usr/bin/chromedriver'
     file_loc = './downloaded_files'
     folders = ['/SEBRA']#['/SEBRA','/NF_SEBRA','/MF_SEBRA']
     parsed_fname = 'sebra_parsed_python.csv'
