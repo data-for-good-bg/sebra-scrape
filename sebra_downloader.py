@@ -98,7 +98,7 @@ class SebraDownloader:
 
         ## extract the urls with the relevant dates
         urls = {}
-        for d in self.dates:
+        for d in sorted(self.dates):
             url = 'https://www.minfin.bg/bg/transparency/' + d
             urls[d] = url
         print('All relevant urls to be crawled for the specified period exported')
