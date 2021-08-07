@@ -211,6 +211,8 @@ class SebraParser:
                 ops_df = None
 
             dfs.append(ops_df)
-        
-        df = pd.concat(dfs)
+        if len(dfs) > 0:
+            df = pd.concat(dfs)
+        else:
+            df = pd.DataFrame()
         return df

@@ -51,11 +51,12 @@ class SebraPipeline:
         self.SGD.read_parsed_file(self.parsed_fname)
         self.SGD.append_parsed_df(self.ops_df)
         self.SGD.fix_dates()
-        self.ops_df = fix_dates(self.ops_df)
+        if self.ops_df.shape[0]>0:
+            self.ops_df = fix_dates(self.ops_df)
     
-    def upload_parsed_file_to_gdrive(self):
+    def upload_parsed_file_to_gdrive(self, sheets_id = None):
         self.SGD.parsed_df.to_csv(f'{self.file_loc}/{self.parsed_fname}')
-        self.SGD.upload_parsed_file(self.file_loc, self.parsed_fname)
+        self.SGD.upload_parsed_file(self.file_loc, self.parsed_fname, sheets_id=sheets_id)
 
     def append_new_parse_to_db(self):
         self.ops_df.reset_index().to_sql(os.path.splitext(self.parsed_fname)[0], self.cnx, index=False, if_exists='append', method='multi')
@@ -71,7 +72,7 @@ def main():
     chrome_path = '/usr/local/bin/chromedriver'
     file_loc = './downloaded_files'
     folders = ['/SEBRA']#['/SEBRA','/NF_SEBRA','/MF_SEBRA']
-    parsed_fname = 'sebra_parsed.csv'
+    parsed_fname = 'sebra_parsed_python.csv'
     service_acct_file = 'service_acct.json'
 
     SebraPipe = SebraPipeline(chrome_path, file_loc, folders, parsed_fname)
@@ -79,7 +80,7 @@ def main():
     SebraPipe.download_parsed_file_from_gdrive()
     SebraPipe.download_new_reports()
     SebraPipe.parse_new_reports()
-    SebraPipe.upload_parsed_file_to_gdrive()
+    SebraPipe.upload_parsed_file_to_gdrive(sheets_id='1IybA305wTSqOrm6aeot_4cw8ZyGUjXJ9J_Yz5dduKWE')
     SebraPipe.upload_new_reports_to_gdrive()
     SebraPipe.append_new_parse_to_db()
 

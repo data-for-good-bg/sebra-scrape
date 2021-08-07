@@ -51,7 +51,7 @@ class SebraGDrive:
                 print(f'Cannot upload file {name}')
                 continue
 
-    def upload_parsed_file(self, source_location, parsed_fname):
+    def upload_parsed_file(self, source_location, parsed_fname, sheets_id = None):
         file_metadata = {'name': parsed_fname,
         'fileId': self.parsed_id}
 
@@ -67,3 +67,13 @@ class SebraGDrive:
             os.remove(f'{source_location}/{parsed_fname}')
         except:
             raise Exception("Can't Upload File.")
+        if sheets_id is not None:
+            file_sheets_metadata = {'name': parsed_fname.split(['.'])[0],
+            'fileId': self.parsed_id,
+            'mimeType': 'application/vnd.google-apps.spreadsheet'}
+
+            self.GDM.service.files().update(
+                    body=file_sheets_metadata, media_body=media, fields='id', fileId = sheets_id, 
+                    supportsAllDrives=True).execute()
+
+    

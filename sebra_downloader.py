@@ -118,7 +118,9 @@ class SebraDownloader:
                 
                 
                 year = d[:4]
+                
                 html = s.get(self.urls[d])
+                print(html.status_code)
 
                 if html.status_code != 200:
                     self.issues_requests[d] = 'Status request: ' + str(html.status_code)
@@ -135,6 +137,7 @@ class SebraDownloader:
                         if 'upload' in link.get('href'):
                             num_upload += 1 
                         #checks and counts if .xl is mentioned in the html, extracts the links !! to do might need to look for other extensions
+                        
                         if '.xl' in link.get('href'):
                             num_files += 1
                             files.append('https://www.minfin.bg' + link.get('href'))
