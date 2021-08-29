@@ -33,9 +33,10 @@ class SebraGDrive:
         self.min_month = self.max_date.month
         self.min_day = self.max_date.day
 
-    def append_parsed_df(self, new_parsed_df):
+    def append_parsed_df(self, new_parsed_df, write_out = False):
         self.parsed_df = pd.concat([self.parsed_df, new_parsed_df])
-        self.parsed_df.to_csv('downloaded_files/parsed_drive_file.csv', index=False)
+        if write_out:
+            self.parsed_df.to_csv('downloaded_files/parsed_drive_file.csv', index=False)
 
     
     def fix_dates(self):

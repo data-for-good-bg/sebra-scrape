@@ -8,6 +8,7 @@ from settings import postgres_proj_str, main_project_drive_id, raw_data_folder_i
 from sebra_gdrive_manager import SebraGDrive
 from sebra_downloader import SebraDownloader
 from sebra_parser import SebraParser
+import logging
 
 def fix_dates(df):
     df['Start Date'] = pd.to_datetime(df['Start Date'], format='%d.%m.%Y', errors = 'coerce')
@@ -54,7 +55,9 @@ class SebraPipeline:
         self.ops_df = self.sp.run_parser()
         if self.ops_df.shape[0]>0:
             self.ops_df = fix_dates(self.ops_df)
-        self.SGD.read_parsed_file(self.parsed_fname)
+        # self.SGD.read_parsed_file(self.parsed_fname)
+        parsed_df = pd.read_sql(f"select * from {os.path.splitext(self.parsed_fname)[0].replace('_python', '')}", self.cnx)
+        self.SGD.parsed_df = parsed_df.copy()
         self.SGD.append_parsed_df(self.ops_df)
         self.SGD.parsed_df = self.SGD.parsed_df[[c for c in self.SGD.parsed_df.columns if 'Unnamed' not in c]]
         # self.SGD.fix_dates()
@@ -65,7 +68,7 @@ class SebraPipeline:
         self.SGD.upload_parsed_file(self.file_loc, self.parsed_fname, sheets_id=sheets_id)
 
     def append_new_parse_to_db(self):
-        self.ops_df.reset_index().to_sql(os.path.splitext(self.parsed_fname)[0].replace('_python', ''), self.cnx, index=False, if_exists='append', method='multi')
+        self.ops_df.reset_index().drop('index', axis='columns').to_sql(os.path.splitext(self.parsed_fname)[0].replace('_python', ''), self.cnx, index=False, if_exists='append', method='multi')
 
     def upload_new_reports_to_gdrive(self):
         raw_files = self.sp.get_all_excel_files()
@@ -74,6 +77,7 @@ class SebraPipeline:
 
 
 def main():
+    
     SCOPES = ['https://www.googleapis.com/auth/drive']
     chrome_path = '/usr/bin/chromedriver'
     file_loc = './downloaded_files'
@@ -81,16 +85,30 @@ def main():
     parsed_fname = 'sebra_parsed_python.csv'
     service_acct_file = 'service_acct.json'
 
+    
     SebraPipe = SebraPipeline(chrome_path, file_loc, folders, parsed_fname)
     SebraPipe.initialize_sebra_gdrive(service_acct_file, SCOPES)
+
+    logging.info('Downloading Previously Parsed File')
     SebraPipe.download_parsed_file_from_gdrive()
+
+    logging.info('Downloading new reports. This might take a while.')
     SebraPipe.download_new_reports()
+
+    logging.info('Parsing new reports. This might take a while.')
     SebraPipe.parse_new_reports()
+
+    logging.info('Uploading parsed file to GDrive and updating the public sheet.')
     SebraPipe.upload_parsed_file_to_gdrive(sheets_id='1VoB4dIH2Y2x2O-eH0ivNmBUYCcT-1NR6T5h8eWkE33Y')
+
+    logging.info('Uploading new reports. This might take a while.')
     SebraPipe.upload_new_reports_to_gdrive()
+
+    logging.info('Writing to DB')
     SebraPipe.append_new_parse_to_db()
 
 if __name__ == '__main__':
+    logging.info('Starting SEBRA Pipeline')
     main()
 
     
