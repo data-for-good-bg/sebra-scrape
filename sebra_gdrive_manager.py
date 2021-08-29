@@ -24,9 +24,11 @@ class SebraGDrive:
 
     def read_parsed_file(self, fname):
         self.parsed_df = pd.read_csv(f'downloaded_files/{fname}')
-        parsed_df = self.parsed_df.copy()
-        parsed_df['Start Date'] = pd.to_datetime(parsed_df['Start Date'], format='%d.%m.%Y', errors = 'coerce')
-        self.max_date = parsed_df['Start Date'].max() + pd.DateOffset(1)
+
+        self.parsed_df['Start Date'] = pd.to_datetime(self.parsed_df['Start Date'], format='%Y-%m-%d', errors = 'coerce')
+        self.parsed_df['End Date'] = pd.to_datetime(self.parsed_df['End Date'], format='%Y-%m-%d', errors = 'coerce')
+
+        self.max_date = self.parsed_df['Start Date'].max() + pd.DateOffset(1)
         self.min_year = self.max_date.year
         self.min_month = self.max_date.month
         self.min_day = self.max_date.day
@@ -68,12 +70,13 @@ class SebraGDrive:
         except:
             raise Exception("Can't Upload File.")
         if sheets_id is not None:
-            file_sheets_metadata = {'name': parsed_fname.split(['.'])[0],
-            'fileId': self.parsed_id,
+            fileName = self.GDM.service.files().get(fileId=sheets_id).execute()["name"]
+            file_sheets_metadata = {'name': fileName,
+            'fileId': sheets_id,
             'mimeType': 'application/vnd.google-apps.spreadsheet'}
 
             self.GDM.service.files().update(
-                    body=file_sheets_metadata, media_body=media, fields='id', fileId = sheets_id, 
+                    body=file_sheets_metadata, media_body=media, fileId = sheets_id, fields='id',
                     supportsAllDrives=True).execute()
 
     

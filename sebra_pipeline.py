@@ -24,8 +24,9 @@ class SebraPipeline:
 
         date_range = pd.date_range(start="2019-01-01",end=str(datetime.now().date()))
     
-        self.sebra_dates = pd.read_sql('select("Start Date") as final_date from sebra_parsed', self.cnx)
+        self.sebra_dates = pd.read_sql(f'''select "Start Date" as final_date from {os.path.splitext(self.parsed_fname)[0].replace('_python', '')}''', self.cnx)
         self.missing_dates = set(date_range.astype(str)).difference(self.sebra_dates.final_date.astype(str).values)
+        print(f"""Missing dates: {tuple(sorted(self.missing_dates))}""")
         # self.min_year = self.sebra_dates['final_date'][0].year
         # self.min_month = self.sebra_dates['final_date'][0].month
         # self.min_day = self.sebra_dates['final_date'][0].day
@@ -51,18 +52,20 @@ class SebraPipeline:
     def parse_new_reports(self):
         self.sp = SebraParser(self.sd.parent_location)
         self.ops_df = self.sp.run_parser()
-        self.SGD.read_parsed_file(self.parsed_fname)
-        self.SGD.append_parsed_df(self.ops_df)
-        self.SGD.fix_dates()
         if self.ops_df.shape[0]>0:
             self.ops_df = fix_dates(self.ops_df)
+        self.SGD.read_parsed_file(self.parsed_fname)
+        self.SGD.append_parsed_df(self.ops_df)
+        self.SGD.parsed_df = self.SGD.parsed_df[[c for c in self.SGD.parsed_df.columns if 'Unnamed' not in c]]
+        # self.SGD.fix_dates()
+        
     
     def upload_parsed_file_to_gdrive(self, sheets_id = None):
         self.SGD.parsed_df.to_csv(f'{self.file_loc}/{self.parsed_fname}')
         self.SGD.upload_parsed_file(self.file_loc, self.parsed_fname, sheets_id=sheets_id)
 
     def append_new_parse_to_db(self):
-        self.ops_df.reset_index().to_sql(os.path.splitext(self.parsed_fname)[0], self.cnx, index=False, if_exists='append', method='multi')
+        self.ops_df.reset_index().to_sql(os.path.splitext(self.parsed_fname)[0].replace('_python', ''), self.cnx, index=False, if_exists='append', method='multi')
 
     def upload_new_reports_to_gdrive(self):
         raw_files = self.sp.get_all_excel_files()
@@ -83,7 +86,7 @@ def main():
     SebraPipe.download_parsed_file_from_gdrive()
     SebraPipe.download_new_reports()
     SebraPipe.parse_new_reports()
-    SebraPipe.upload_parsed_file_to_gdrive(sheets_id='1IybA305wTSqOrm6aeot_4cw8ZyGUjXJ9J_Yz5dduKWE')
+    SebraPipe.upload_parsed_file_to_gdrive(sheets_id='1VoB4dIH2Y2x2O-eH0ivNmBUYCcT-1NR6T5h8eWkE33Y')
     SebraPipe.upload_new_reports_to_gdrive()
     SebraPipe.append_new_parse_to_db()
 
