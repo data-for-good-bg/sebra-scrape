@@ -14,6 +14,14 @@ class GDriveManager:
         self.scopes = scopes
         self.credentials_file = credentials_file
 
+
+    def list_all_files_in_drive(self, drive_id):
+        
+        results = self.service.files().list(q = "'" + drive_id + "' in parents").execute()
+        items = results.get('files', [])
+
+        return items
+
     def create_gdrive_service(self):
         credentials = service_account.Credentials.from_service_account_file(
         self.credentials_file, scopes=self.scopes)

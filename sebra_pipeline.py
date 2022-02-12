@@ -12,6 +12,7 @@ from sebra_parser import SebraParser
 import logging
 import gspread
 from gspread_dataframe import set_with_dataframe
+from settings import manually_fixed_drive_id
 
 def fix_dates(df):
     df['Start Date'] = pd.to_datetime(df['Start Date'], format='%d.%m.%Y', errors = 'coerce')
@@ -52,17 +53,55 @@ class SebraPipeline:
         self.parsed_df = self.parsed_df[[c for c in self.parsed_df.columns if 'Unnamed' not in c]]
     
         self.missing_dates = set(date_range.astype(str)).difference(self.parsed_df['Start Date'].astype(str).values)
-        print(f"""Missing dates: {tuple(sorted(self.missing_dates))}""")
+        # print(f"""Missing dates: {tuple(sorted(self.missing_dates))}""")
 
-    def download_new_reports(self):
+    def download_manually_fixed_files(self):
+        self.manually_fixed_items = self.SGD.GDM.list_all_files_in_drive(manually_fixed_drive_id)
+
+        self.manually_fixed_dates = []
+
+        for f in self.manually_fixed_items:
+            try:
+                self.SGD.GDM.download_by_file_id(f['id'], f'downloaded_files/{self.folders[0]}/{f["name"].split(".")[0][-4:]}/{f["name"]}')
+
+            except:
+                continue
+
+            try:
+                fixed_date = str(pd.to_datetime(f['name'].split('.')[0][-8:], format = '%d%m%Y').date())
+
+                if fixed_date not in self.missing_dates:
+                    os.remove(f'downloaded_files/{self.folders[0]}/{f["name"].split(".")[0][-4:]}/{f["name"]}')
+
+
+                self.manually_fixed_dates.append(fixed_date)
+            except Exception as e:
+                print(e)
+                os.remove(f'downloaded_files/{self.folders[0]}/{f["name"].split(".")[0][-4:]}/{f["name"]}')
+
+        self.missing_dates = set(self.missing_dates).difference(set(self.manually_fixed_dates))
+
+    
+    def remove_weekends(self):
+        self.missing_weekdates = []
+        for d in self.missing_dates:
+            if pd.to_datetime(d).date().weekday() < 5:
+                self.missing_weekdates.append(d)
+
+        self.missing_dates = set(self.missing_weekdates)
+
+    def create_downloader(self):
         self.sd = SebraDownloader(self.file_loc, self.chrome_path, self.folders, 
         self.missing_dates)
         self.sd.get_urls()
+     
+
+    def download_new_reports(self):
         self.sd.download_reports()
 
     def parse_new_reports(self):
-        self.sp = SebraParser(self.sd.parent_location)
-        self.ops_df = self.sp.run_parser()
+        self.sp = SebraParser('downloaded_files/SEBRA')
+        self.ops_df = self.sp.run_parser(self.SGD)
         if self.ops_df.shape[0]>0:
             self.ops_df = fix_dates(self.ops_df)
         # self.SGD.read_parsed_file(self.parsed_fname)
@@ -159,6 +198,14 @@ def main():
 
     logging.info('Downloading Previously Parsed File')
     SebraPipe.download_parsed_file_from_gdrive()
+
+    logging.info('Downloading manually parsed reports.')
+    SebraPipe.download_manually_fixed_files()
+
+    logging.info('Removing weekend dates')
+    SebraPipe.remove_weekends()
+
+    SebraPipe.create_downloader()
 
     logging.info('Downloading new reports. This might take a while.')
     SebraPipe.download_new_reports()

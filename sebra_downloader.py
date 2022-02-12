@@ -116,6 +116,7 @@ class SebraDownloader:
         """
         with requests.Session() as s:
             for d in self.urls.keys():
+                time.sleep(2)
                 
                 
                 year = d[:4]

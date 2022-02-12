@@ -5,6 +5,7 @@ import os
 from gdrive_manage import GDriveManager
 from googleapiclient.http import MediaFileUpload
 from mimetypes import MimeTypes
+from settings import manually_fixed_drive_id
 
 class SebraGDrive:
     def __init__(self, credentials_file, scopes, main_folder_id, raw_data_folder_id, parsed_data_folder_id) -> None:
