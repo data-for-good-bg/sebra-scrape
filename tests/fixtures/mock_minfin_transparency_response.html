@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="bg">
+	<head>
+		<meta charset="UTF-8">
+		<title>Министерство на финансите :: Публикувана ежедневна информация за плащанията на бюджета</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<link rel="stylesheet" type="text/css" href="/assets/css/base/css/bootstrap.css">
+		<link rel="stylesheet" type="text/css" href="/assets/css/base/css/base.min.css">
+		<link rel="stylesheet" type="text/css" href="/assets/css/style.css?03">
+		<link rel="stylesheet" type="text/css" href="/assets/js/dtpckr/dtpckr.css">
+		<link rel="stylesheet" type="text/css" href="/assets/js/jquery-ui.css">
+		<link rel="stylesheet" type="text/css" href="/assets/css/video.css">
+		<link rel="stylesheet" type="text/css" href="/assets/css/print.css" media="print">
+		<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+		<link rel="manifest" href="/assets/icons/site.webmanifest">
+		<link rel="mask-icon" href="/assets/icons/safari-pinned-tab.svg" color="#5bbad5">
+		<link rel="stylesheet" type="text/css" href="/assets/css/inner.css?t=1712404744">
+		<link rel="stylesheet" type="text/css" href="/assets/css/colorbox/colorbox.css">
+						<link href='https://fonts.googleapis.com/css?family=Ubuntu+Condensed&amp;subset=latin,cyrillic-ext' rel='stylesheet' type='text/css'>
+		<script src="/assets/js/jquery-3.6.0.min.js"></script>
+		<script src="/assets/js/jquery-ui.js"></script>
+		<script src="/assets/js/minFin.js"></script>
+		<script src="/assets/js/jquery.colorbox-min.js"></script>
+		<script src="/assets/js/dtpckr/dtpckr.js"></script>
+		<script src="/assets/js/bootstrap.js"></script>
+			<link rel="alternate" type="application/rss+xml" title="Публикации (общ)" href="/bg/rss" />
+	<link rel="alternate" type="application/rss+xml" title="Актуално" href="/bg/rss/1" />
+	<link rel="alternate" type="application/rss+xml" title="Коментари и изказвания" href="/bg/rss/2" />
+	<link rel="alternate" type="application/rss+xml" title="Парламентарен контрол" href="/bg/rss/3" />
+	<link rel="alternate" type="application/rss+xml" title="В медиите" href="/bg/rss/4" />
+	<script>
+		function flashLoaded(e) {
+			jwplayer(e.ref).onPlay(function() {
+				pageTracker._trackEvent('Видео', 'Play', $('#' + e.id).prevAll('h5').text() || $('#' + e.id).next('.date').next('a').text() || $('#main h2.content').text());
+			});
+		}
+	</script>
+	<script>
+		function calculateCheckDigits(countryCode, d10) {
+			var fakeIban = countryCode + '00' + d10;
+			fakeIban = function (iban) {
+				iban = iban.substr(4) + iban.substr(0,4);
+				return iban
+				.split('')
+					.map(function(n) {
+						var code = n.charCodeAt(0);
+						if (code >= 'A'.charCodeAt(0) && code <= 'Z'.charCodeAt(0)){
+							return code - 'A'.charCodeAt(0) + 10;
+						} else {
+							return n;
+						}
+					}).join('');
+			}(fakeIban);
+			var checkDigits = function (iban) {
+				var remainder = iban;
+				var block;
+				while (remainder.length > 2){
+					block = remainder.slice(0, 9);
+					remainder = parseInt(block, 10) % 97 + remainder.slice(block.length);
+				}
+				return parseInt(remainder, 10) % 97;
+			}(fakeIban);
+			return ('0' + (98 - checkDigits)).slice(-2);
+		}
+		function cop() {
+			navigator.clipboard.writeText(document.getElementById("i").value);
+		}
+	</script>
+											<meta property="og:type" content="website" />
+														<meta property="og:title" content="" />
+																				<meta property="og:image" content="https://www.minfin.bg/assets/images/mf_logo.png" />
+																			<meta property="og:description" content="" />
+														<meta property="og:locale" content="bg_BG" />
+														<meta property="og:url" content="https://www.minfin.bg/bg/transparency" />
+											<script>
+		var _paq = window._paq = window._paq || [];
+		_paq.push(['trackPageView']);
+		_paq.push(['enableLinkTracking']);
+		(function() {
+			var u="//track.uslugi.io/";
+			_paq.push(['setTrackerUrl', u+'matomo.php']);
+			_paq.push(['setSiteId', '13']);
+			var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+			g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+		})();
+		</script>
+			</head>
+	<body>
+		
+
+		<div class="container-fluid" id="main">
+			<header class="container header">
+            <div class="accessibility-menu container">
+                <a class="accessibility-menu-theme accessibility-theme-normal" href="#">C</a>
+                <a class="accessibility-menu-theme accessibility-theme-blue" href="#accessibility-blue">C</a>
+                <a class="accessibility-menu-theme accessibility-theme-dark" href="#accessibility-dark">C</a>
+                <a class="accessibility-menu-theme accessibility-theme-yellow" href="#accessibility-yellow">C</a>
+                <a class="text-only" data-state="text-only" href="#">Текстова версия</a>
+                <a class="font-size" data-state="normal" href="#">Увеличи шрифта</a>
+                <a class="accessibility-menu-btn pull-right" href="#"><i class="glyphicon glyphicon-remove"><span class="sr-only">Затвори</span></i></a>
+            </div>
+			<div class="interactive-menu">
+				<ul>
+                    <li><a href="#accessibility" class="accessibility-menu-btn">Инструменти за достъпност</a></li>
+										<li class="contacts "><a href="/bg/contacts">Контакти</a></li>
+					<li class="english lang"><a href="/en/811"><span>English</span></a></li>					<li class="site-map"><a href="/bg/sitemap">Карта на сайта</a></li>
+				</ul>
+			</div>
+			<div class="row logo-row">
+				<div class="gerb col-md-2 col-sm-3 hidden-xs"></div>
+				<div class="site-title col-md-10 col-sm-9">
+					<h3><a href="/bg/2">Република България</a></h3>
+					<h2><a href="/bg/2">Министерство на финансите</a></h2>
+					<span>Официална интернет страница</span>
+				</div>
+				<div class="search-block">
+					<form method="get" action="/bg/search">
+						<div class="form-group">
+							<label for="search-field" class="sr-only">Търсене</label>
+							<input type="search" name="q" value="" class="search-field" id="search-field">
+							<input type="submit" value="Търси" class="search-btn" id="search">
+						</div>
+					</form>
+				</div>
+			</div>
+		</header>
+				<div class="container main-block-wrapper">
+			<div class="navigation-block">
+	<nav class="navbar navbar-default">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand visible-xs" href="#">Меню</a>
+		</div>
+		<div class="collapse navbar-collapse" id="navbar-collapse">
+			<ul class="nav navbar-nav" id="topmenu" data-accessible="Основно меню"><li class="single-line hidden-xs"><a href="/bg/2"><span aria-hidden="true" class="glyphicon glyphicon-home"><span class="sr-only">Начало</span></span></a></li><li class="single-line"><a href="/bg/615">Министерство</a></li><li class="single-line"><a href="/bg/4">Бюджет             </a></li><li class="single-line"><a href="/bg/6">Данъчна политика</a></li><li class="single-line"><a href="/bg/5">Държавен дълг</a></li><li class="single-line"><a href="/bg/7">Публични разходи</a></li><li class="single-line"><a href="/bg/9">България и ЕС</a></li><li class="single-line last-item"><a href="/bg/537">Икономическа политика</a></li></ul>		</div>
+	</nav>
+</div>			<main class="main-block">
+				<div class="main-block-content-wrapper">
+	<div class="main-block-content">
+		<div class="row">
+			<div class="middle-nav col-md-3 col-sm-3" >
+				<h3 class="different">Календар</h3><ul class="calendar pe"><li class="navi"><a href="/bg/transparency/2023-03">«</a></li><li class="year">2024</li><li class="navi"></li><li class="navi"><a href="/bg/transparency/2024-02">«</a></li><li class="month">МАР</li><li class="navi"><a href="/bg/transparency/2024-04">»</a></li><li class="first"><a href="/bg/transparency/2024-03-01">1</a></li><li class="weekend">2</li><li class="weekend">3</li><li>4</li><li><a href="/bg/transparency/2024-03-05">5</a></li><li><a href="/bg/transparency/2024-03-06">6</a></li><li><a href="/bg/transparency/2024-03-07">7</a></li><li><a href="/bg/transparency/2024-03-08">8</a></li><li class="weekend">9</li><li class="weekend">10</li><li><a href="/bg/transparency/2024-03-11">11</a></li><li><a href="/bg/transparency/2024-03-12">12</a></li><li><a href="/bg/transparency/2024-03-13">13</a></li><li><a href="/bg/transparency/2024-03-14">14</a></li><li><a href="/bg/transparency/2024-03-15">15</a></li><li class="weekend">16</li><li class="weekend">17</li><li><a href="/bg/transparency/2024-03-18">18</a></li><li><a href="/bg/transparency/2024-03-19">19</a></li><li><a href="/bg/transparency/2024-03-20">20</a></li><li><a href="/bg/transparency/2024-03-21">21</a></li><li><a href="/bg/transparency/2024-03-22">22</a></li><li class="weekend">23</li><li class="weekend">24</li><li><a href="/bg/transparency/2024-03-25">25</a></li><li class="selected"><a href="/bg/transparency/2024-03-26">26</a></li><li><a href="/bg/transparency/2024-03-27">27</a></li><li><a href="/bg/transparency/2024-03-28">28</a></li><li><a href="/bg/transparency/2024-03-29">29</a></li><li class="weekend">30</li><li class="weekend">31</li></ul>				<h3 class="different">Информация за:</h3><ul class="docs"><li class="filesmenu-link xlsx"><a href="/upload/57933/SEBRA-26032024.xlsx">Плащания в СЕБРА и други плащания в БНБ</a></li><li class="filesmenu-link xlsx"><a href="/upload/57934/SEBRA-MF-2024-03-26.xlsx">Плащания в СЕБРА на ЦА и ВРБ към МФ</a></li><li class="filesmenu-link xlsx"><a href="/upload/57935/NF_SEBRA_26.03.2024.xlsx">Плащания в СЕБРА на Национален фонд</a></li></ul>				<ul class="menu-list" id="leftmenu" data-accessible="Меню съдържание"><li><a href="/bg/1523">Прозрачност</a></li><li><a href="/bg/1632">Решения по Закона за достъп до обществена информация</a></li><li class="selected-item"><a href="/bg/transparency">Публикувана ежедневна информация за плащанията на бюджета</a></li><li><a href="/bg/1127">Регистър „Общински дълг“</a></li><li><a href="/bg/1130">Макроикономическа прогноза</a></li><li><a href="/bg/1532">Обществени съвети към министъра на финансите</a></li><li><a href="/bg/1661">Експертен консултативен съвет към министъра на финансите по изпълнението на ЗОП </a></li></ul>			</div>
+			<div class="contacts-info col-md-9 col-sm-9" id="content" data-accessible="Съдържание">
+				<div class="top-heading-block">
+					<div class="breadcrumb-block">
+						<ul class="breadcrumb"><li><a href="/bg/2">Начало</a></li><li><a href="/bg/617">Пресинформация</a></li><li><a href="/bg/792">Открито управление</a></li><li><a href="/bg/transparency">Публикувана ежедневна информация за плащанията на бюджета</a></li></ul>					</div>
+				</div>
+				<div class="row"><h3>Публикувана ежедневна информация за плащанията на бюджета</h3></div>				<script>
+	var max = 0;
+	$('.pagemenu-item > a').each(function () {
+		max = Math.max(max, $(this).outerHeight()) + 3;
+	});
+	$('.pagemenu-item > a').each(function () {
+		$(this).outerHeight(max);
+	});
+</script>				<div class="row">
+					<div class="inner-content">
+						<p style="text-align: justify;"><strong class="outer-link" style="background-color: #f2e7e5;">ИНФОРМАЦИЯ ЗА ПЛАЩАНИЯТА В СЕБРА И ДРУГИ ПЛАЩАНИЯ ПО ДНИ МОЖЕ ДА НАМЕРИТЕ В КАЛЕНДАРА ВЛЯВО</strong></p>
+<p style="text-align: justify;"><strong>Обхват на публикуваната ежедневна информация за плащанията на бюджета</strong></p>
+<p style="text-align: justify;"><strong>Системата за електронни бюджетни разплащания (СЕБРА)&nbsp;</strong>е система за наблюдение на инициираните плащания от включените в нея юридически лица и за управление на плащанията в рамките на предварително зададени лимити.</p>
+<p style="text-align: justify;">В съответствие с Наредбата за определяне на реда, начина, сроковете и обхвата на подлежащата на публикуване информация от СЕБРА се публикува информация за всеки работен ден както следва:</p>
+<p style="text-align: justify;"><strong>Извършени плащания чрез СЕБРА</strong></p>
+<ul style="text-align: justify;">
+<li>Плащания от левови бюджетни сметки в Българска народна банка на първостепенните разпоредители с бюджет по държавния бюджет, Националния осигурителен институт и администрираните от него бюджети на социалноосигурителните фондове, Националната здравноосигурителна каса, Българската национална телевизия, Българското национално радио, Българската телеграфна агенция, Българската академия на науките и на държавните висши училища;</li>
+<li>Плащания от левови сметки в Българска народна банка за средствата от Европейския съюз (вкл. националното съфинансиране) на Националния фонд към министъра на финансите, на Държавен фонд &ldquo;Земеделие&rdquo; и други сметки за средствата от Европейския съюз по чл. 142, ал. 2 от Закона за публичните финанси;</li>
+<li>Плащания на включените в СЕБРА други бюджетни организации по чл. 13, ал. 3 и 4 от Закона за публичните финанси, включително лицата по чл. 171, ал. 1 от този закон;</li>
+<li>Предоставени трансфери/субсидии/временни безлихвени заеми от централния бюджет за общините: обща субсидия за делегираните от държавата дейности; трансфери за местни дейности; целева субсидия за капиталови разходи; други целеви разходи, включително за местни дейности; временни безлихвени заеми.</li>
+</ul>
+<p style="text-align: justify;"><strong>Други извършени плащания</strong></p>
+<ul style="text-align: justify;">
+<li>Субсидии и други текущи и капиталови трансфери за нефинансови предприятия;</li>
+<li>Плащания по обслужване на държавния дълг (лихви и главници);</li>
+<li>Вноска в общия бюджет на ЕС;</li>
+<li>Разходи, свързани с обслужване на сметки и плащания и др.</li>
+</ul>
+<p style="text-align: justify;"><strong>В информацията не се включват:</strong></p>
+<ul>
+<li style="text-align: justify;">Плащания от валутни сметки на бюджетните организации и сметки, открити за обслужване на средства по международни програми и споразумения, при наличие на изрично изискване за отделна банкова сметка в съответните договори и регламенти на ЕС;</li>
+<li>Плащания по схемата за централизирано разплащане на осигурителни вноски по реда на чл. 159 от Закона за публичните финанси;</li>
+<li>Операции, които подлежат на включване в отчетите за изпълнение на съответния бюджет или сметките за средства от Европейския съюз, които се приравняват на касов поток в съответствие с изискванията за отчетността на бюджетните организации на касова основа съгласно т. 7.4 от ДДС 20/2004 г. (финансов лизинг и др.).</li>
+</ul>
+<p style="text-align: justify;">Посочените операции представляват незначителен по обем ресурс.</p>
+<p style="text-align: justify;"><u></u><strong>Код за вид плащане в СЕБРА</strong></p>
+<p style="text-align: justify;">Информацията за извършените плащания в СЕБРА се обработва и класифицира по&nbsp;<strong>кодове за вид плащане.&nbsp;</strong>Номенклатурата на кодовете за вид плащане е разработена и структурирана по икономически тип в съответствие с основните позиции на бюджетните разходи и операции за целите на агрегирания контрол и управление на касовите потоци в следните основни направления:</p>
+<ul style="text-align: justify;">
+<li>плащания за персонал;</li>
+<li>плащания за текуща издръжка;</li>
+<li>плащания за капиталови разходи;</li>
+<li>трансфери за други бюджети;</li>
+<li>плащания в частта на финансирането;</li>
+<li>служебни банкови операции.</li>
+</ul>
+<p style="text-align: justify;"><strong>Списък на кодовете за вид плащане в СЕБРА</strong></p>
+<p style="text-align: justify;">Код 01 - Заплати, възнаграждения и други плащания за персонала &ndash; нетна сума за изплащане</p>
+<p style="text-align: justify;">Код 02 - Удържани данъци и осигурителни вноски от заплати и възнаграждения на персонала (с изключение на централизирано разплащане на осигурителни вноски)</p>
+<p style="text-align: justify;">Код 03 - Плащания за други удръжки от възнаграждения за персонала</p>
+<p style="text-align: justify;">Код&nbsp;05&nbsp;-&nbsp;Осигурителни вноски за сметка на осигурителя (с изключение на централизирано разплащане на осигурителни вноски)</p>
+<p style="text-align: justify;">Код 10 - Издръжка</p>
+<p style="text-align: justify;">Код 18 - Други разходи</p>
+<p style="text-align: justify;">Код 20 - Разходи за лихви</p>
+<p style="text-align: justify;">Код 30 - Текущи субсидии за предприятия</p>
+<p style="text-align: justify;">Код 40 - Стипендии, пенсии, помощи и текущи трансфери за домакинства</p>
+<p style="text-align: justify;">Код&nbsp;50&nbsp;-&nbsp;Плащания за дълготрайни активи, основен ремонт и капиталови трансфери</p>
+<p style="text-align: justify;">Код 60 - Трансфери между бюджети, сметки и фондове на бюджетни организации</p>
+<p style="text-align: justify;">Код&nbsp;70&nbsp;-&nbsp;Възмездно финансиране &ndash; придобиване на дялове и акции, предоставени кредити и временна финансова помощ</p>
+<p style="text-align: justify;">Код 80 -&nbsp;Погашения по банкови заеми</p>
+<p style="text-align: justify;">Код&nbsp;88&nbsp;-&nbsp;Средства на разпореждане &ndash; плащания по операции с временно съхранявани средства и средства на разпореждане</p>
+<p style="text-align: justify;">Код 89 -&nbsp;Друго финансиране &ndash; плащания за сметка на ЕС, плащания по операции с чужди средства и всички други операции в частта на финансирането, които не са обхванати от кодове 70, 80 и 88.</p>
+<p style="text-align: justify;">Код 90 - Възстановени приходи &ndash; плащания за възстановяване на надвнесени и погрешно внесени бюджетни приходи</p>
+<p style="text-align: justify;">Код 91 - Теглене на левове в брой</p>
+<p style="text-align: justify;">Код 92 - Закупуване на валута в брой</p>
+<p style="text-align: justify;">Код 93 - Закупуване на валута в брой, по сметка и за директен превод</p>
+<p style="text-align: justify;">Код 94 - Откриване на акредитив</p>
+<p style="text-align: justify;">Код 95 - Преводи чрез директен дебит и по инициатива на БНБ</p>
+<p style="text-align: justify;">Код 96 - Преводи по нареждане на титуляра с други платежни документи</p>
+<p style="text-align: justify;">Код 97 - Операции по откриване/закриване на депозити</p>
+<p style="text-align: justify;">От Код 98 до Код 99 &ndash; Служебни операции в БНБ</p>
+<p style="text-align: justify;"><strong>Първостепенна система в СЕБРА</strong></p>
+<p style="text-align: justify;"><strong>Първостепенната система</strong>&nbsp;е първото ниво в йерархичната структура на СЕБРА.</p>
+<p style="text-align: justify;">Всеки първостепенен разпоредител с бюджет, заедно с неговите подчинени структури от второ и трето ниво (ако има такива) образува система на първостепенен разпоредител или т.нар. &bdquo;първостепенна система&rdquo;.</p>
+<p style="text-align: justify;">Всеки второстепенен разпоредител, който заедно с всички негови подчинени от трето ниво (ако има такива) образува система на второстепенен разпоредител или т. нар. &bdquo;второстепенна система&rdquo;. По оторизация от първостепенен разпоредител, второстепенен разпоредител (т.нар.''оторизиран второстепенен разпоредител'') може да поеме правата по обработка на заявките за плащане на третостепененните разпоредители от своята система (т. нар.''оторизирана второстепенна система'').</p>
+<p style="text-align: justify;">За целите на наблюдението и управлението на плащанията в СЕБРА има случаи, в които понятието &bdquo;първостепенна система&rdquo; не съвпада изцяло с понятието &bdquo;първостепенен разпоредител с бюджет&rdquo;, тъй като със статут на първостепенна система в СЕБРА са дефинирани отделни структури и/или конкретни плащания. Така например обособени първостепенни системи са: Българската академия на науките, държавните висши училища, плащанията на Националния фонд и др.</p>
+<p style="text-align: justify;">Плащанията в СЕБРА се извършват от бюджетните организации чрез йерархически структурирани десетразрядни кодове, определяни от Министерство на финансите. Първостепенната система се идентифицира с първите три разряда от съответния десетразряден код, например&nbsp;<strong>Министерство на образованието и науката</strong>, като първостепенна система в СЕБРА, се идентифицира по следния начин:&nbsp;<strong>017 *** *** *&nbsp;</strong>. Второстепенната система в СЕБРА се обозначава от първия до шестия разряд на кода, а конкретният бюджетен разпоредител еднозначно се идентифицира с пълния десетразряден код .</p>
+<p style="text-align: justify;">Подробна информация относно технологията на извършване на плащанията в СЕБРА се съдържа в &nbsp;<a href="http://www.bnb.bg/bnbweb/groups/public/documents/bnb_law/instructions_03-13009_bg.pdf">Указание на Българска народна банка и Министерство на финансите за обслужване на сметки на бюджетни предприятия и бюджетни плащания</a>.</p>					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="links-block"><div class="links-content-block"><ul class="links row" id="bottommenu" data-accessible="Допълнително меню"><li class="col-lg-2 col-md-3 col-xs-6"><a href="/bg/legislation1">Проекти на нормативни и други актове</a></li><li class="col-lg-2 col-md-3 col-xs-6"><a href="/bg/1015">Методология на отчетността</a></li><li class="col-lg-2 col-md-3 col-xs-6"><a href="/bg/477">Административно обслужване и информация</a></li><li class="col-lg-2 col-md-3 col-xs-6"><a href="/bg/982">Нормативни и други актове</a></li><li class="col-lg-2 col-md-3 col-xs-6"><a href="https://www.minfin.bg/bg/1591">ОИСР</a></li><li class="col-lg-2 col-md-3 col-xs-6"><a href="/bg/8">ИСФУКВО</a></li><li class="col-lg-2 col-md-3 col-xs-6"><a href="/bg/613">Статистика</a></li><li class="col-lg-2 col-md-3 col-xs-6"><a href="http://stateaid.minfin.bg/bg/page/5">Държавни помощи</a></li><li class="col-lg-2 col-md-3 col-xs-6"><a href="/bg/12">Школа по публични финанси</a></li><li class="col-lg-2 col-md-3 col-xs-6"><a href="/bg/documents">Документи</a></li><li class="col-lg-2 col-md-3 col-xs-6"><a href="/bg/procurement">Профил на купувача</a></li><li class="col-lg-2 col-md-3 col-xs-6"><a href="/bg/17">Кариери</a></li></ul></div></div><script>
+	var basePath = "/bg/transparency/2024-03-26";
+	$('#goto').on('submit', function (e) {
+		e.preventDefault();
+		var input = $(this).find('input');
+		if (parseInt(input.val()) <= parseInt(input.data('max')) && parseInt(input.val()) >= parseInt(input.data('min'))) {
+			window.location = basePath + '?p=' + input.val();
+		}
+	});
+</script>			</main>
+			<div class="main-banners-block">
+				<div class="main-banners-content">
+				<a class="banner" style="background-image: url(/upload/57928/EURO_LOGO_14.png); width: 200px; text-indent: 250px; height: 85px; line-height: 85px;" href="https://evroto.bg/#" title="ЗА ЕВРОТО" target="_blank">ЗА ЕВРОТО</a><a class="banner" style="background-image: url(/upload/38376/banner-rmspay.png); width: 200px; text-indent: 250px; height: 85px; line-height: 85px;" href="/bg/1084" title="ИС РМС-Плащания" target="_blank">ИС РМС-Плащания</a><a class="banner" style="background-image: url(/upload/49460/short_selling_bg2.jpg); width: 200px; text-indent: 250px; height: 85px; line-height: 85px;" href="/bg/819" title="Къси продажби" target="_blank">Къси продажби</a><a class="banner" style="background-image: url(/upload/52831/banner_bg.png); width: 200px; text-indent: 250px; height: 85px; line-height: 85px;" href="/bg/1579" title="План за възстановяване и устойчивост на Република България" target="_blank">План за възстановяване и устойчивост на Република България</a><a class="banner" style="background-image: url(/upload/20488/1464771036.jpg); width: 200px; text-indent: 250px; height: 85px; line-height: 85px;" href="/bg/972" title="Система за електронно възлагане на обществени поръчки" target="_blank">Система за електронно възлагане на обществени поръчки</a>				</div>
+			</div>
+		</div>
+		<footer class="container">
+			<div class="footer-content">
+				<a class="banner" style="background-image: url(/upload/20454/1436450563.png); width: 96px; text-indent: 100px; height: 60px; line-height: 60px;" href="http://www.nap.bg/" title="Национална агенция за приходите" target="_blank">Национална агенция за приходите</a><a class="banner" style="background-image: url(/upload/20455/1436451063.png); width: 96px; text-indent: 100px; height: 60px; line-height: 60px;" href="https://customs.bg/wps/portal/agency/home" title="Агенция Митници" target="_blank">Агенция Митници</a><a class="banner" style="background-image: url(/upload/40825/ADFI_logo_small.png); width: 96px; text-indent: 100px; height: 60px; line-height: 60px;" href="http://www.adfi.minfin.bg/bg/" title="Агенция за държавна финансова инспекция" target="_blank">Агенция за държавна финансова инспекция</a><a class="banner" style="background-image: url(/upload/20457/1434640766.png); width: 96px; text-indent: 100px; height: 60px; line-height: 60px;" href="http://aeuf.minfin.bg/" title="Изпълнителна агенция Одит на средствата от Европейския съюз" target="_blank">Изпълнителна агенция Одит на средствата от Европейския съюз</a><a class="banner" style="background-image: url(/upload/20484/1451977521.png); width: 96px; text-indent: 100px; height: 60px; line-height: 60px;" href="https://www2.aop.bg/" title="Агенция по обществени поръчки" target="_blank">Агенция по обществени поръчки</a>			</div>
+		</footer>
+	</div>
+	<div class="container-fluid bottom-footer-block">
+		<div class="container bottom-footer-content">
+		<a class="banner" style="background-image: url(/upload/20461/1434641895.png); width: 104px; text-indent: 108px; height: 32px; line-height: 32px;" href="http://www.eufunds.bg/bg/" title="Структурни фондове на ЕС" target="_blank">Структурни фондове на ЕС</a><a class="banner" style="background-image: url(/upload/20463/1434641925.png); width: 104px; text-indent: 108px; height: 32px; line-height: 32px;" href="http://www.strategy.bg/?lang=bg-BG" title="Портал за обществени консултации" target="_blank">Портал за обществени консултации</a><a class="banner" style="background-image: url(/upload/20462/1434641908.png); width: 104px; text-indent: 108px; height: 32px; line-height: 32px;" href="http://www.minfin.bg/bg/229" title="ДФГУДПС" target="_blank">ДФГУДПС</a><a class="banner" style="background-image: url(/upload/20482/1482225586.png); width: 104px; text-indent: 108px; height: 32px; line-height: 32px;" href="http://www.fmfib.bg" title="Фонд на фондовете" target="_blank">Фонд на фондовете</a><a class="banner" style="background-image: url(/upload/20466/1434641971.png); width: 104px; text-indent: 108px; height: 32px; line-height: 32px;" href="http://www.bse-sofia.bg/?page=main&language=bg" title="Българска фондова борса" target="_blank">Българска фондова борса</a><a class="banner" style="background-image: url(/upload/20467/1434641997.png); width: 104px; text-indent: 108px; height: 32px; line-height: 32px;" href="/bg/214" title="Сигнали за корупция" target="_blank">Сигнали за корупция</a><a class="banner" style="background-image: url(/upload/40691/EOP-Logo.png); width: 104px; text-indent: 108px; height: 32px; line-height: 32px;" href="https://identity.eop.bg/Account/Login?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3DNX1SPA%26redirect_uri%3Dhttps%253A%252F%252Fapp.eop.bg%252Flogon%26response_type%3Dcode%26scope%3Dopenid%2520profile%2520email%2520read%2520write%2520negometri" title="ЦАИС ЕОП" target="_blank">ЦАИС ЕОП</a>		</div>
+		<div class="container bottom-footer-content" style="padding-bottom: 20px" id="footer" data-accessible="Фуутър"><a style="font-family: 'Sofia Condensed'; margin: 0 0.5em;" href="/bg/1303">Декларация за достъпност</a><a style="font-family: 'Sofia Condensed'; margin: 0 0.5em;" href="/bg/privacy-policy">Политика за поверителност</a><a style="font-family: 'Sofia Condensed'; margin: 0 0.5em;" href="/bg/terms-of-use">Условия за ползване</a></div>	</div>
+
+    <div id="cookies" data-expire="Fri, 05 Jul 2024 14:59:04 +0300" style="position: fixed; padding: 20px; padding: 2rem; bottom: 0; left: 0; right: 0; background: rgba(30, 30, 30, 0.8); color: white; text-align: center;">
+        <p>Този сайт използва бисквитки (cookies). Като приемете бисквитките, можете да се възползвате от оптималното поведение на сайта.</p>
+        <a href="#" class="btn btn-primary btn-accept" style="margin: 5px 10px; margin: 0.5rem 1rem;">Приемане</a>
+        <a href="#" class="btn btn-default btn-refuse" style="margin: 5px 10px; margin: 0.5rem 1rem;">Отказ</a>
+        <a href="/bg/privacy-policy" class="btn btn-default" style="margin: 5px 10px; margin: 0.5rem 1rem;">Повече информация</a>
+    </div>
+    <script>
+    $('#cookies a.btn-accept').on('click', function(e) {
+        e.preventDefault();
+        document.cookie = "cookies=1; expires="+$('#cookies').data('expire')+"; path=/";
+        $('#cookies').hide();
+    });
+    $('#cookies a.btn-refuse').on('click', function(e) {
+        e.preventDefault();
+        document.cookie = "cookies=0; expires="+$('#cookies').data('expire')+"; path=/";
+        $('#cookies').hide();
+    });
+    </script>
+<script>
+    var items = [];
+    $('[data-accessible]').each(function () {
+        var accessible = $(this).data('accessible'),
+            id = $(this).attr('id');
+        items.push('<a href="#' + id + '" class="goto">' + accessible + '</a>');
+    });
+    $('.accessibility-menu').prepend(items.join(''));
+    $('.accessibility-menu-btn').on('click', function(e) {
+        e.preventDefault();
+        $('.accessibility-menu').toggleClass('visible');
+    });
+    $('.accessibility-menu-theme').on('click', function (e) {
+        e.preventDefault();
+        var clss = $(this).attr('href').substr(1);
+        $('html').removeAttr('class')
+        if (clss.length) {
+            $('html').addClass(clss);
+        }
+    });
+    var textOnly = {"text-only":"\u0422\u0435\u043a\u0441\u0442\u043e\u0432\u0430 \u0432\u0435\u0440\u0441\u0438\u044f","full":"\u041f\u044a\u043b\u043d\u0430 \u0432\u0435\u0440\u0441\u0438\u044f"};
+    $('.text-only').on('click', function (e) {
+        e.preventDefault();
+        switch ($(this).data('state')) {
+            case 'text-only':
+                $(this).data('state', 'full').text(textOnly['full']);
+                $("link[type='text/css']").prop('media', 'none');
+                break;
+            case 'full':
+                $(this).data('state', 'text-only').text(textOnly['text-only']);
+                $("link[type='text/css']").prop('media', 'all');
+                break;
+            default:
+                break;
+        }
+    });
+    var fontSize = {"normal":"\u041d\u0430\u043c\u0430\u043b\u0438 \u0448\u0440\u0438\u0444\u0442\u0430","large":"\u0423\u0432\u0435\u043b\u0438\u0447\u0438 \u0448\u0440\u0438\u0444\u0442\u0430"};
+    $('.font-size').on('click', function (e) {
+        e.preventDefault();
+        switch ($(this).data('state')) {
+            case 'large':
+                $(this).data('state', 'normal').text(fontSize['large']);
+                $('html').removeClass('magnify');
+                break;
+            case 'normal':
+                $(this).data('state', 'large').text(fontSize['normal']);
+                $('html').addClass('magnify');
+                break;
+            default:
+                break;
+        }
+    });
+</script>		<script>
+		$(function(){
+			$('h4.colapsable').on('click', function(e) {
+				$(this).toggleClass('active').next('div').slideToggle();
+			}).next('div').hide().find('td, th').css({'padding' : '4px'});
+			cboxPrev = document.getElementById('cboxPrevious');
+			cboxPrev.ariaLabel = "previous";
+			cboxNext = document.getElementById('cboxNext');
+			cboxNext.ariaLabel = "next";
+			cboxSlideshow = document.getElementById('cboxSlideshow');
+			cboxSlideshow.ariaLabel = "Slideshow";
+		});
+		</script>
+		<noscript><p><img src="//track.uslugi.io/matomo.php?idsite=13&amp;rec=1" style="border:0;" alt="" /></p></noscript>
+	</body>
+</html>
