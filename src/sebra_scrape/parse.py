@@ -251,10 +251,3 @@ def parse_sebra_report(df):
     )
 
     return ops_df
-
-
-if __name__ == "__main__":
-    df_raw = pd.read_excel("downloaded/raw/sebra/SEBRA-16032023.xlsx")
-    df_parsed = parse_sebra_report(df_raw)
-    df_parsed.to_csv("parsed_new.csv")
-    print(df_parsed)
