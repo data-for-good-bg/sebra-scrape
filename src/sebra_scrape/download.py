@@ -5,7 +5,7 @@ import re
 import requests
 import logging
 
-from src.constants import (
+from src.sebra_scrape.constants import (
     SEBRA_REPORT_ID_STRING,
     SEBRA_MF_REPORT_ID_STRING,
     SEBRA_NF_REPORT_ID_STRING,

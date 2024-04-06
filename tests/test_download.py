@@ -2,12 +2,12 @@ import unittest
 import os
 from unittest.mock import patch, mock_open, MagicMock
 from datetime import date
-from src.download import (
+from src.sebra_scrape.download import (
     extract_links,
     download_report,
     WrongNumberOfDownloadLinksFoundException,
 )
-from src.constants import (
+from src.sebra_scrape.constants import (
     SEBRA_REPORT_ID_STRING,
     SEBRA_MF_REPORT_ID_STRING,
     SEBRA_NF_REPORT_ID_STRING,
