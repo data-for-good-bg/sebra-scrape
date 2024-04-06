@@ -75,9 +75,7 @@ def extract_links(date_for: datetime.date) -> dict[str, str]:
     return download_url_param_strings
 
 
-def download_report(
-    destination_dir: str, param_string: str, report_type_id: str
-) -> None:
+def download_report(destination_dir: str, param_string: str) -> None:
     """
     Downloads a report from a URL constructed using the given parameter string and saves it to the destination
         directory.
@@ -85,7 +83,6 @@ def download_report(
     Args:
         destination_dir: The directory where the downloaded report will be saved.
         param_string: The parameter string used to construct the URL.
-        report_type_id: The identifier for the type of report being downloaded. See our constants file.
 
     Returns:
         None
@@ -95,18 +92,17 @@ def download_report(
         IOError: If there is an error writing the downloaded report to the destination file.
     """
     url = f"https://www.minfin.bg{param_string}"
-    logger.info(f"Downloading `{report_type_id}` report from {url} ...")
     resp = requests.get(url)
     resp.raise_for_status()
 
     file_name = param_string.split("/")[
         -1
     ]  # The param string will end with the filename
-    dest_dir = os.path.join(
-        destination_dir, SEBRA_FILE_DESTINATIONS["raw"][report_type_id]
-    )
-    os.makedirs(dest_dir, exist_ok=True)
-    dest_file = os.path.join(dest_dir, file_name)
+
+    os.makedirs(destination_dir, exist_ok=True)
+    dest_file = os.path.join(destination_dir, file_name)
     logger.info(f"Writing to {dest_file} ...")
     with open(dest_file, "wb") as fp:
         fp.write(resp.content)
+
+    return dest_file
