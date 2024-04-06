@@ -5,7 +5,7 @@ import re
 import requests
 import logging
 
-from src.sebra_scrape.constants import (
+from .constants import (
     SEBRA_REPORT_ID_STRING,
     SEBRA_MF_REPORT_ID_STRING,
     SEBRA_NF_REPORT_ID_STRING,
@@ -34,6 +34,7 @@ class WrongNumberOfDownloadLinksFoundException(Exception):
     pass
 
 
+# TODO: return links including https://www.minfin.bg/ and refactor download report use those
 def extract_links(date_for: datetime.date) -> dict[str, str]:
     """
     Extracts links for downloading SEBRA reports from https://www.minfin.bg/bg/transparency
