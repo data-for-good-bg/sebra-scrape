@@ -23,3 +23,14 @@ The project does the following:
 
 ## Contact
 For details please contact elvan.aydemir@data-for-good.bg 
+
+
+## Airflow setup instructions
+ - Add the abspath to the `dags` directory in this project to the airflow dags config as a path to search for DAGs in
+ - Set up virtual env in a `venv` folder in the project directory and install the project as a package in said env:
+```bash
+python -m venv venv
+source venv/bin/activate
+# You can install with the -e flag if you will be working on the package contents and testing them
+pip install . 
+```
