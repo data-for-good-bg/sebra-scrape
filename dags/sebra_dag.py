@@ -5,17 +5,17 @@ from airflow.decorators import dag, task
 import os
 import sys
 
-sebra_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+sebra_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src")
 sys.path.append(sebra_path)
 
-from src.sebra_scrape.constants import (
+from sebra_scrape.constants import (
     SEBRA_ID_STRINGS,
     SEBRA_FILE_DESTINATIONS,
     SEBRA_REPORT_ID_STRING,
 )
 
-
-# TODO: read from env?
+# We assume this file is placed in a `dags` directory which is next to a `venv` directory, containing a venv for our
+#   ExternalPythonOperators
 PATH_TO_SEBRA_PYTHON_BINARY = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "venv", "bin", "python"
 )
@@ -51,7 +51,7 @@ def sebra_minfin_etl():
 
     @task.external_python(
         python=PATH_TO_SEBRA_PYTHON_BINARY,
-        on_failure_callback=upload_unparsable_file_to_gdrive,
+        on_failure_callback=upload_unparsable_file_to_dgrive,
     )
     def download_sebra_report(url, destination_dir):
         print(f"Downloading SEBRA report from {url}...")
