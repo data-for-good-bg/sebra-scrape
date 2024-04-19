@@ -21,8 +21,8 @@ PATH_TO_SEBRA_PYTHON_BINARY = os.path.join(
 )
 
 # TODO: read from env/config
-SEBRA_REPORTS_LOCAL_DOWNLOAD_DIR = (
-    "/home/yasen/workspace/dataforgood/sebra-scrape/downloaded_files"
+SEBRA_REPORTS_LOCAL_DOWNLOAD_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "downloaded_files"
 )
 
 
