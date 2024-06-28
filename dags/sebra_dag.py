@@ -4,6 +4,7 @@ from airflow.decorators import dag, task
 
 import os
 import sys
+from datetime import date, timedelta 
 
 sebra_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src")
 sys.path.append(sebra_path)
@@ -25,14 +26,14 @@ SEBRA_REPORTS_LOCAL_DOWNLOAD_DIR = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "..", "downloaded_files"
 )
 
-
+print(SEBRA_REPORTS_LOCAL_DOWNLOAD_DIR)
 # TODO: set up schedule such that we do not scrape weekends and (?)national holidays(?)
 # TODO: fix logging
 @dag(
-    schedule=None,
+    schedule="@daily",
     start_date=pendulum.datetime(2024, 4, 2, tz="UTC"),
     catchup=False,
-    tags=["example", "sebra"],
+    tags=["sebra"],
 )
 def sebra_minfin_etl():
     """
@@ -45,9 +46,10 @@ def sebra_minfin_etl():
     @task.external_python(python=PATH_TO_SEBRA_PYTHON_BINARY, multiple_outputs=True)
     def fetch_sebra_report_links_for_date(*, ds):
         from sebra_scrape.download import extract_links
-        from datetime import datetime
+        from datetime import date, timedelta, datetime
 
         return extract_links(datetime.strptime(ds, "%Y-%m-%d").date())
+        #return extract_links( date.today() - timedelta(days=1) )
 
     @task.external_python(
         python=PATH_TO_SEBRA_PYTHON_BINARY,

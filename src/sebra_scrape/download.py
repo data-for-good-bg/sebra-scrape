@@ -57,9 +57,10 @@ def extract_links(date_for: datetime.date) -> dict[str, str]:
             for those dates.
     """
     url = f"https://www.minfin.bg/bg/transparency/{date_for.strftime('%Y-%m-%d')}"
-    logger.info(f"Fetching from f{url}")
+    logger.warning(f"Fetching from f{url}")
     resp = requests.get(url)
     resp.raise_for_status()
+    logger.warning(f'text: {resp.text}')
 
     # We will get one param string
     download_url_param_strings = dict()
@@ -67,9 +68,11 @@ def extract_links(date_for: datetime.date) -> dict[str, str]:
         matches = re.findall(expr, resp.text)
         logger.debug(f"Found {len(matches)} using r'{expr}'")
         if len(matches) != 1:
-            raise WrongNumberOfDownloadLinksFoundException(
-                f"Expected 1 link, got {matches} using r'{expr}'"
-            )
+            logger.warning(f"Expected 1 link, got {matches} using r'{expr}'")
+            continue
+            #raise WrongNumberOfDownloadLinksFoundException(
+            #    f"Expected 1 link, got {matches} using r'{expr}'"
+            #)
         download_url_param_strings[report_type_id] = matches[0]
     logger.info(f"Links found: {download_url_param_strings}")
     return download_url_param_strings
