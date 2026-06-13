@@ -1,0 +1,3 @@
+# TODO: manually created, consider automating with `uv export`
+google-api-python-client==2.196.0
+requests==2.34.2
