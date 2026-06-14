@@ -12,7 +12,7 @@ from decimal import Decimal, InvalidOperation, getcontext
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, List, Dict, Any
-
+from decimal import localcontext, ROUND_HALF_UP
 
 
 logging.basicConfig(level=logging.INFO)
@@ -66,7 +66,6 @@ class SebraSection:
         else:
             # Use Decimal arithmetic with sufficient precision to avoid rounding
             # Save current context precision and use higher precision for sum
-            from decimal import localcontext, ROUND_HALF_UP
             with localcontext() as ctx:
                 ctx.prec = 28  # Sufficient precision for monetary calculations
                 ctx.rounding = ROUND_HALF_UP
@@ -115,10 +114,19 @@ class SebraData:
             errors.append(summary_error)
 
         # Validate all org sections
-        for section in self.org_sections:
-            valid, error = section.validate_total_sum()
-            if not valid:
-                errors.append(error)
+        sum_of_sums = Decimal(0)
+        with localcontext() as ctx:
+            ctx.prec = 28  # Sufficient precision for monetary calculations
+            ctx.rounding = ROUND_HALF_UP
+
+            for section in self.org_sections:
+                sum_of_sums += section.total_sum
+                valid, error = section.validate_total_sum()
+                if not valid:
+                    errors.append(error)
+
+        if sum_of_sums != self.summary.total_sum:
+            errors.append(f'Total sum from summary item {self.summary.total_sum} differs from the sum of sums {sum_of_sums}')
 
         if not errors:
             return True, None
@@ -212,6 +220,19 @@ def _is_header_row(row: Any) -> bool:
     return (row[0].strip() == 'Код' and
             isinstance(row[1], str) and row[1].strip() == 'Описание' and
             isinstance(row[3], str) and row[3].strip() == 'Сума')
+
+
+def _is_value_row(row: Any) -> bool:
+    """
+    Check if row has empty or str first column (the op code),
+    string in the second column (the description) and float in the forth column
+    (the amount).
+    """
+    return (
+        (pd.isna(row[0]) or isinstance(row[0], str)) and
+        (pd.isna(row[1]) or isinstance(row[1], str)) and
+        (isinstance(row[3], float) or isinstance(row[3], int))
+    )
 
 
 def _parse_amount(value: Any) -> Optional[Decimal]:
@@ -334,6 +355,7 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
     path_obj = Path(xlsx_path)
     filename = path_obj.name
 
+    logger.info(f'parsing {filename}')
     df = pd.read_excel(xlsx_path, header=None)
 
     # Drop rows where all columns are NaN
@@ -387,39 +409,38 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
             logger.info(f'[summary section] Skipping column header row in summary, row={list(row)}')
             continue
 
-        # Skip empty first column
-        if not isinstance(row[0], str) or not row[0].strip():
-            logger.info(f'[summary section] Skipping row with empty first column, row={list(row)}')
-            continue
+        if _is_value_row(row):
+            # Parse operation row
+            op_code_raw = row[0]
+            op_desc = row[1].strip() if isinstance(row[1], str) else ''
 
-        # Parse operation row
-        op_code_raw = row[0].strip()
-        op_desc = row[1].strip() if isinstance(row[1], str) else ''
-
-        # Parse amount
-        amount = _parse_amount(row[3])
-        if amount is None:
-            logger.warning(f'[summary section] Skipping row with invalid amount: {row[3]}, row={list(row)}')
-            continue
-
-        # Parse operation code
-        code = _parse_operation_code(op_code_raw)
-
-        # If no code found (e.g., '    xxxx'), generate from description
-        if code is None:
-            code = _generate_operation_code_from_description(op_desc)
-            if code is None:
-                logger.warning(f'[summary section] Could not generate operation code for: {op_desc}, row={list(row)}')
+            # Parse amount
+            amount = _parse_amount(row[3])
+            if amount is None:
+                logger.warning(f'[summary section] Skipping row with invalid amount: {row[3]}, row={list(row)}')
                 continue
 
-        summary_rows.append({
-            'start_date': start_date,
-            'end_date': end_date,
-            'operation_code': code,
-            'operation_description': op_desc,
-            'currency': currency,
-            'amount': amount
-        })
+            # Parse operation code
+            code = _parse_operation_code(op_code_raw)
+
+            # If no code found (e.g., '    xxxx'), generate from description
+            if code is None:
+                code = _generate_operation_code_from_description(op_desc)
+                if code is None:
+                    logger.warning(f'[summary section] Could not generate operation code for: {op_desc}, row={list(row)}')
+                    continue
+
+            summary_rows.append({
+                'start_date': start_date,
+                'end_date': end_date,
+                'operation_code': code,
+                'operation_description': op_desc,
+                'currency': currency,
+                'amount': amount
+            })
+        else:
+            row_types = [type(c) for c in row]
+            logger.warning(f'[summary section] Skipping unexpected row: row={list(row)}, {row_types=}')
 
     # Create summary DataFrame
     if summary_rows:
