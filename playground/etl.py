@@ -69,7 +69,7 @@ class SebraData:
 
 
 
-def _parse_period(period_str):
+def _parse_period(period_str: Any) -> tuple[Optional[str], Optional[str]]:
     """Extract start and end dates from period string like 'Период: 19.05.2023 - 19.05.2023'."""
     if not isinstance(period_str, str):
         return None, None
@@ -79,7 +79,7 @@ def _parse_period(period_str):
     return None, None
 
 
-def _parse_org_header(header_str):
+def _parse_org_header(header_str: Any) -> tuple[str, Optional[str]]:
     """Parse organization name and ID from string like 'Name ( ID )'."""
     if not isinstance(header_str, str):
         return '', None
@@ -89,25 +89,25 @@ def _parse_org_header(header_str):
     return name, org_id
 
 
-def _generate_code_from_text(text, length=7):
+def _generate_code_from_text(text: str, length: int = 7) -> str:
     """Generate a code by uppercasing text, computing MD5, and taking first N chars."""
     return hashlib.md5(text.upper().encode()).hexdigest()[:length]
 
 
-def _is_operation_code(val):
+def _is_operation_code(val: Any) -> bool:
     """Check if string matches operation code pattern like '01 xxxx'."""
     if not isinstance(val, str):
         return False
     return bool(re.match(r'^\s*\d{2}\s*xxxx\s*$', val.strip(), flags=re.IGNORECASE))
 
 
-def _is_descriptive_row(row):
+def _is_descriptive_row(row: Any) -> bool:
     """Check if row has value only in first column (descriptive/skippable)."""
     if pd.isna(row[0]) or not str(row[0]).strip():
         return False
     return all(pd.isna(v) or not str(v).strip() for v in row[1:])
 
-def _extract_currency(header_str):
+def _extract_currency(header_str: Any) -> Optional[str]:
     """Extract currency from summary header like 'ОБЩО ПЛАЩАНИЯ ЗА ДЕНЯ (в евро)'."""
     if not isinstance(header_str, str):
         return None
@@ -121,14 +121,14 @@ def _extract_currency(header_str):
     return None
 
 
-def _is_summary_header(text):
+def _is_summary_header(text: Any) -> bool:
     """Check if text is a summary section header."""
     if not isinstance(text, str):
         return False
     return 'ОБЩО ПЛАЩАНИЯ ЗА ДЕНЯ' in text
 
 
-def _is_org_header(text):
+def _is_org_header(text: Any) -> bool:
     """Check if text looks like an organization header with parentheses."""
     if not isinstance(text, str):
         return False
@@ -137,14 +137,14 @@ def _is_org_header(text):
     return bool(re.search(r'\s*\(.*\)\s*$', text))
 
 
-def _is_totals_row(text):
+def _is_totals_row(text: Any) -> bool:
     """Check if text indicates a totals row."""
     if not isinstance(text, str):
         return False
     return 'Общо:' in text.strip()
 
 
-def _is_header_row(row):
+def _is_header_row(row: Any) -> bool:
     """Check if row is a column header row (Код, Описание, Сума) or (Описание, Сума)."""
     if not isinstance(row[0], str):
         # Check for non-standard header with Описание in col1 and Сума in col3
@@ -157,7 +157,7 @@ def _is_header_row(row):
             isinstance(row[3], str) and row[3].strip() == 'Сума')
 
 
-def _parse_amount(value):
+def _parse_amount(value: Any) -> Optional[Decimal]:
     """Parse amount from cell value to Decimal with proper precision."""
     if pd.isna(value):
         return None
@@ -173,7 +173,7 @@ def _parse_amount(value):
         return None
 
 
-def _parse_operation_code(text):
+def _parse_operation_code(text: Any) -> Optional[str]:
     """Parse operation code from text, returns code or None."""
     if not isinstance(text, str):
         return None
@@ -195,14 +195,14 @@ def _parse_operation_code(text):
     return None
 
 
-def _generate_operation_code_from_description(desc):
+def _generate_operation_code_from_description(desc: Any) -> Optional[str]:
     """Generate operation code from description text."""
     if not isinstance(desc, str):
         return None
     return _generate_code_from_text(desc, length=7)
 
 
-def _generate_org_id_from_name(name):
+def _generate_org_id_from_name(name: Any) -> Optional[str]:
     """Generate organization ID from name."""
     if not isinstance(name, str):
         return None
