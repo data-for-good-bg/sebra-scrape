@@ -181,9 +181,9 @@ def _parse_amount(value):
 
 
 def _parse_operation_code(text):
-    """Parse operation code from text, returns (code, original_text)."""
+    """Parse operation code from text, returns code or None."""
     if not isinstance(text, str):
-        return None, None
+        return None
 
     text = text.strip()
 
@@ -192,14 +192,14 @@ def _parse_operation_code(text):
         # Extract the code part (01)
         m = re.match(r'^\s*(\d{2})\s*xxxx\s*$', text, flags=re.IGNORECASE)
         if m:
-            return m.group(1), text
+            return m.group(1)
 
     # If it's just "xxxx" or similar without a code
     if text.lower().strip() == 'xxxx':
-        return None, text
+        return None
 
     # For descriptive text that doesn't match pattern
-    return None, text
+    return None
 
 
 def _generate_operation_code_from_description(desc):
@@ -352,7 +352,7 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
             continue
 
         # Parse operation code
-        code, _ = _parse_operation_code(op_code_raw)
+        code = _parse_operation_code(op_code_raw)
 
         # If no code found (e.g., "    xxxx"), generate from description
         if code is None:
@@ -456,7 +456,7 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
                     continue
 
                 # Parse operation code
-                code, _ = _parse_operation_code(op_code_raw)
+                code = _parse_operation_code(op_code_raw)
 
                 # If no code found, generate from description
                 if code is None:
