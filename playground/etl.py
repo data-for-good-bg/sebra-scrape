@@ -169,7 +169,7 @@ def _parse_amount(value):
             value_str = str(value).strip().replace(',', '.')
         return Decimal(value_str)
     except (InvalidOperation, ValueError, TypeError):
-        logger.warning(f"Could not parse amount: {value}")
+        logger.warning(f'Could not parse amount: {value}')
         return None
 
 
@@ -316,23 +316,23 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
         if _is_totals_row(row[0]):
             summary_total = _parse_amount(row[3])
             if summary_total is None:
-                logger.warning(f"Could not parse summary total amount: {row[3]}, row={list(row)}")
+                logger.warning(f'[summary section] Could not parse summary total amount: {row[3]}, row={list(row)}')
                 summary_total = Decimal('0')
             break
 
         # Skip descriptive rows (text only in first column)
         if _is_descriptive_row(row):
-            logger.info(f"Skipping descriptive row in summary: {row[0]}, row={list(row)}")
+            logger.info(f'[summary section] Skipping descriptive row in summary: {row[0]}, row={list(row)}')
             continue
 
         # Skip column header rows
         if _is_header_row(row):
-            logger.info(f"Skipping column header row in summary, row={list(row)}")
+            logger.info(f'[summary section] Skipping column header row in summary, row={list(row)}')
             continue
 
         # Skip empty first column
         if not isinstance(row[0], str) or not row[0].strip():
-            logger.info(f'Skipping row with empty first column row={list(row)}')
+            logger.info(f'[summary section] Skipping row with empty first column, row={list(row)}')
             continue
 
         # Parse operation row
@@ -342,17 +342,17 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
         # Parse amount
         amount = _parse_amount(row[3])
         if amount is None:
-            logger.warning(f"Skipping row with invalid amount: {row[3]}, row={list(row)}")
+            logger.warning(f'[summary section] Skipping row with invalid amount: {row[3]}, row={list(row)}')
             continue
 
         # Parse operation code
         code = _parse_operation_code(op_code_raw)
 
-        # If no code found (e.g., "    xxxx"), generate from description
+        # If no code found (e.g., '    xxxx'), generate from description
         if code is None:
             code = _generate_operation_code_from_description(op_desc)
             if code is None:
-                logger.warning(f"Could not generate operation code for: {op_desc}, row={list(row)}")
+                logger.warning(f'[summary section] Could not generate operation code for: {op_desc}, row={list(row)}')
                 continue
 
         summary_rows.append({
@@ -413,18 +413,18 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
                 if _is_totals_row(org_row[0]):
                     org_total = _parse_amount(org_row[3])
                     if org_total is None:
-                        logger.warning(f"Could not parse org total amount: {org_row[3]}, row={list(org_row)}")
+                        logger.warning(f'[org section] Could not parse org total amount: {org_row[3]}, row={list(org_row)}')
                         org_total = Decimal('0')
                     break
 
                 # Skip descriptive rows
                 if _is_descriptive_row(org_row):
-                    logger.info(f"Skipping descriptive row in org section: {org_row[0]}, row={list(org_row)}")
+                    logger.info(f'[org section] Skipping descriptive row in org section: {org_row[0]}, row={list(org_row)}')
                     continue
 
                 # Skip column header rows
                 if _is_header_row(org_row):
-                    logger.info(f"Skipping column header row in org section, row={list(org_row)}")
+                    logger.info(f'[org section] Skipping column header row in org section, row={list(org_row)}')
                     continue
 
                 # Skip empty first column - but check if this might be an operation row
@@ -446,7 +446,7 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
                 # Parse amount
                 amount = _parse_amount(org_row[3])
                 if amount is None:
-                    logger.warning(f"Skipping org row with invalid amount: {org_row[3]}, row={list(org_row)}")
+                    logger.warning(f'[org section] Skipping org row with invalid amount: {org_row[3]}, row={list(org_row)}')
                     continue
 
                 # Parse operation code
@@ -456,7 +456,7 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
                 if code is None:
                     code = _generate_operation_code_from_description(op_desc)
                     if code is None:
-                        logger.warning(f"Could not generate operation code for org: {op_desc}, row={list(org_row)}")
+                        logger.warning(f'[org section] Could not generate operation code for org: {op_desc}, row={list(org_row)}')
                         continue
 
                 org_rows.append({
@@ -491,15 +491,15 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
             org_sections.append(org_section)
         elif _is_descriptive_row(row):
             # Descriptive row between sections, skip it
-            logger.info(f"Skipping descriptive row between sections: {row[0]}, row={list(row)}")
+            logger.info(f'[org section] Skipping descriptive row between sections: {row[0]}, row={list(row)}')
             continue
         elif _is_summary_header(row[0]):
             # This shouldn't happen, but skip
-            logger.warning(f"Unexpected summary header in middle of file: {row[0]}, row={list(row)}")
+            logger.warning(f'[summary section] Unexpected summary header in middle of file: {row[0]}, row={list(row)}')
             continue
         else:
             # Unexpected row, log and skip
-            logger.warning(f"Unexpected row, row={list(row)}")
+            logger.warning(f'[org section] Unexpected row, row={list(row)}')
             continue
 
     # Create and return SebraData
