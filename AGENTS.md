@@ -49,6 +49,7 @@ The test: Every changed line should trace directly to the user's request.
 ## 4. Python
 
 * Python functions should have type hints.
+* When using type hints avoid using union types, use dedicated types like Optional
 * Avoid using tuples with more than 2 elements for function arguments
   or return types, instead use dataclasses
 * Use single quotes for strings, double quotes for python docs
