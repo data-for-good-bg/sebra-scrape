@@ -52,6 +52,36 @@ class SebraSection:
     data: pd.DataFrame
     total_sum: Decimal
 
+    def validate_total_sum(self) -> tuple[bool, Optional[str]]:
+        """
+        Validate that total_sum equals the sum of amounts in data DataFrame.
+
+        Returns:
+            tuple[bool, Optional[str]]: (True, None) if sums match exactly.
+            (False, str) if they don't match, with description containing
+            is_summary and the differing values.
+        """
+        if self.data.empty:
+            calculated_sum = Decimal('0')
+        else:
+            # Use Decimal arithmetic with sufficient precision to avoid rounding
+            # Save current context precision and use higher precision for sum
+            from decimal import localcontext, ROUND_HALF_UP
+            with localcontext() as ctx:
+                ctx.prec = 28  # Sufficient precision for monetary calculations
+                ctx.rounding = ROUND_HALF_UP
+                calculated_sum = Decimal('0')
+                for amount in self.data['amount']:
+                    if pd.notna(amount) and amount is not None:
+                        calculated_sum += Decimal(str(amount))
+
+        if self.total_sum == calculated_sum:
+            return True, None
+
+        return False, (f"is_summary={self.is_summary}, "
+                       f"total_sum={self.total_sum}, "
+                       f"calculated_sum={calculated_sum}")
+
 
 @dataclass
 class SebraData:
@@ -67,6 +97,33 @@ class SebraData:
     summary: SebraSection
     org_sections: list[SebraSection]
 
+    def validate_total_sum(self) -> tuple[bool, Optional[list[str]]]:
+        """
+        Validate total sums for all sections.
+
+        Returns:
+            tuple[bool, Optional[list[str]]]: (True, None) if all sections
+            validate successfully. (False, list[str]) if any section fails,
+            with list starting with filename followed by error descriptions
+            from failed sections.
+        """
+        errors = []
+
+        # Validate summary section
+        summary_valid, summary_error = self.summary.validate_total_sum()
+        if not summary_valid:
+            errors.append(summary_error)
+
+        # Validate all org sections
+        for section in self.org_sections:
+            valid, error = section.validate_total_sum()
+            if not valid:
+                errors.append(error)
+
+        if not errors:
+            return True, None
+
+        return False, [self.filename] + errors
 
 
 def _parse_period(period_str: Any) -> tuple[Optional[str], Optional[str]]:
