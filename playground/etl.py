@@ -96,15 +96,12 @@ class SebraData:
     summary: SebraSection
     org_sections: list[SebraSection]
 
-    def validate_total_sum(self) -> tuple[bool, Optional[list[str]]]:
+    def validate_total_sum(self) -> 'ValidationResult':
         """
         Validate total sums for all sections.
 
         Returns:
-            tuple[bool, Optional[list[str]]]: (True, None) if all sections
-            validate successfully. (False, list[str]) if any section fails,
-            with list starting with filename followed by error descriptions
-            from failed sections.
+            ValidationResult: dataclass containing validation results and any errors
         """
         errors = []
 
@@ -119,19 +116,48 @@ class SebraData:
             ctx.prec = 28  # Sufficient precision for monetary calculations
             ctx.rounding = ROUND_HALF_UP
 
+            sections_valid = True
             for section in self.org_sections:
                 sum_of_sums += section.total_sum
                 valid, error = section.validate_total_sum()
                 if not valid:
                     errors.append(error)
+                    sections_valid = False
 
-        if sum_of_sums != self.summary.total_sum:
+        summary_sum_equals = sum_of_sums == self.summary.total_sum
+        if not summary_sum_equals:
             errors.append(f'Total sum from summary item {self.summary.total_sum} differs from the sum of sums {sum_of_sums}')
 
-        if not errors:
-            return True, None
+        is_valid = not errors
 
-        return False, [self.filename] + errors
+        return ValidationResult(
+            filename=self.filename,
+            is_valid=is_valid,
+            is_summary_valid=summary_valid,
+            are_sections_valid=sections_valid,
+            is_summary_sum_equal_sum_of_sections=summary_sum_equals,
+            errors=errors
+        )
+
+
+@dataclass
+class ValidationResult:
+    """
+    Result of validating total sums in SebraData.
+
+    * filename: the name of the file being validated
+    * is_valid: True if all validations pass
+    * is_summary_valid: True if the summary section's total matches its data
+    * are_sections_valid: True if all organization sections' totals match their data
+    * is_summary_sum_equal_sum_of_sections: True if summary total equals sum of all org section totals
+    * errors: list of error messages (empty if is_valid is True)
+    """
+    filename: str
+    is_valid: bool
+    is_summary_valid: bool
+    are_sections_valid: bool
+    is_summary_sum_equal_sum_of_sections: bool
+    errors: list[str]
 
 
 def _parse_period(period_str: Any) -> tuple[Optional[str], Optional[str]]:
