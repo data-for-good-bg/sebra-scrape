@@ -10,6 +10,7 @@ import logging
 
 from decimal import Decimal, InvalidOperation, getcontext
 from dataclasses import dataclass
+from functools import wraps
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 from decimal import localcontext, ROUND_HALF_UP
@@ -142,24 +143,24 @@ class SebraData:
         summary_sum_equals = sum_of_sums == self.summary.total_sum
         if not summary_sum_equals:
             errors.append(f'Total sum from summary item {self.summary.total_sum} differs from the sum of sums {sum_of_sums}')
-            
+
             # Additional check: compare amounts by operation code
             merged_org_df = self.merged_org_data()
             if not self.summary.data.empty and not merged_org_df.empty:
                 with localcontext() as ctx:
                     ctx.prec = 28
                     ctx.rounding = ROUND_HALF_UP
-                    
+
                     # For summary, each op_code appears once, so create Series directly
                     summary_by_op = self.summary.data.set_index('operation_code')['amount']
                     # For org data, group by operation_code and sum amounts
                     org_by_op = merged_org_df.groupby('operation_code')['amount'].apply(
                         lambda x: sum(Decimal(str(v)) for v in x if pd.notna(v) and v is not None)
                     )
-                    
+
                     # Find all operation codes
                     all_op_codes = set(summary_by_op.index) | set(org_by_op.index)
-                    
+
                     # Compare amounts for each operation code
                     mismatches = []
                     for op_code in sorted(all_op_codes):
@@ -167,7 +168,7 @@ class SebraData:
                         org_amt = org_by_op.get(op_code, Decimal(0))
                         if summary_amt != org_amt:
                             mismatches.append(f'op_code={op_code}: summary={summary_amt}, org_total={org_amt}')
-                    
+
                     if mismatches:
                         errors.append(f'Operation code amounts mismatch: {"; ".join(mismatches)}')
 
@@ -356,6 +357,25 @@ def _generate_org_id_from_name(name: Any) -> Optional[str]:
     return _generate_code_from_text(name, length=10)
 
 
+def log_to_xlsx_dir(func):
+    @wraps(func)
+    def wrapper(xlsx_path, *args, **kwargs):
+        log_path = Path(xlsx_path).with_suffix('.log')
+        logger = logging.getLogger(func.__module__)
+
+        handler = logging.FileHandler(log_path, mode='a')
+        handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+
+        logger.addHandler(handler)
+        logger.info(f"Starting {func.__name__} for {xlsx_path}")
+        try:
+            return func(xlsx_path, *args, **kwargs)
+        finally:
+            logger.removeHandler(handler)
+    return wrapper
+
+
+@log_to_xlsx_dir
 def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
     """
     Parses a xlsx file with SEBRA payments and returns SebraData.
@@ -422,7 +442,6 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
 
     TODO:
     * add logging handler to store logs in a file
-    * add test for validating sums by op-code
     * check the code if it exhaust the iterator
     """
     # Load the xlsx file
