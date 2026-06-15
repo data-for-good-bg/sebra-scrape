@@ -1,3 +1,5 @@
+import argparse
+import json
 import os
 import re
 import itertools
@@ -726,3 +728,38 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
         summary=summary_section,
         org_sections=org_sections
     )
+
+
+def _cmd_parse_and_validate(args: argparse.Namespace) -> None:
+    """Handle the parse-and-validate command."""
+    sebra_data = parse_sebra_payments_xlsx(args.filepath)
+    validation_result = sebra_data.validate_total_sum()
+    print(json.dumps(validation_result.__dict__))
+
+
+def main() -> None:
+    """Main entry point for the ETL CLI."""
+    parser = argparse.ArgumentParser(description='SEBRA ETL tool')
+    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+
+    # parse-and-validate command
+    parse_parser = subparsers.add_parser(
+        'parse-and-validate',
+        help='Parse xlsx file and validate its contents'
+    )
+    parse_parser.add_argument(
+        'filepath',
+        type=str,
+        help='Path to xlsx file to parse and validate'
+    )
+
+    args = parser.parse_args()
+
+    if args.command == 'parse-and-validate':
+        _cmd_parse_and_validate(args)
+    else:
+        parser.print_help()
+
+
+if __name__ == '__main__':
+    main()
