@@ -55,3 +55,9 @@ The test: Every changed line should trace directly to the user's request.
 * Use single quotes for strings, double quotes for python docs
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## 5. Repo structure
+
+* The playground directory is a place where one can play around with
+  Jupyter notebooks. It has .venv/ or venv/ sub-dir with python virtual
+  environment

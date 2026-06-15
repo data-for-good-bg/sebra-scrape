@@ -96,6 +96,21 @@ class SebraData:
     summary: SebraSection
     org_sections: list[SebraSection]
 
+    def merged_org_data(self) -> pd.DataFrame:
+        """
+        Returns a DataFrame which is the concatenation of all org section dataframes.
+
+        Returns:
+            pd.DataFrame: concatenated DataFrame of all organization sections
+        """
+        if not self.org_sections:
+            return pd.DataFrame(columns=[
+                'start_date', 'end_date', 'operation_code',
+                'operation_description', 'currency', 'amount',
+                'organization_id', 'organization_name'
+            ])
+        return pd.concat([section.data for section in self.org_sections], ignore_index=True)
+
     def validate_total_sum(self) -> 'ValidationResult':
         """
         Validate total sums for all sections.
@@ -127,6 +142,34 @@ class SebraData:
         summary_sum_equals = sum_of_sums == self.summary.total_sum
         if not summary_sum_equals:
             errors.append(f'Total sum from summary item {self.summary.total_sum} differs from the sum of sums {sum_of_sums}')
+            
+            # Additional check: compare amounts by operation code
+            merged_org_df = self.merged_org_data()
+            if not self.summary.data.empty and not merged_org_df.empty:
+                with localcontext() as ctx:
+                    ctx.prec = 28
+                    ctx.rounding = ROUND_HALF_UP
+                    
+                    # For summary, each op_code appears once, so create Series directly
+                    summary_by_op = self.summary.data.set_index('operation_code')['amount']
+                    # For org data, group by operation_code and sum amounts
+                    org_by_op = merged_org_df.groupby('operation_code')['amount'].apply(
+                        lambda x: sum(Decimal(str(v)) for v in x if pd.notna(v) and v is not None)
+                    )
+                    
+                    # Find all operation codes
+                    all_op_codes = set(summary_by_op.index) | set(org_by_op.index)
+                    
+                    # Compare amounts for each operation code
+                    mismatches = []
+                    for op_code in sorted(all_op_codes):
+                        summary_amt = summary_by_op.get(op_code, Decimal(0))
+                        org_amt = org_by_op.get(op_code, Decimal(0))
+                        if summary_amt != org_amt:
+                            mismatches.append(f'op_code={op_code}: summary={summary_amt}, org_total={org_amt}')
+                    
+                    if mismatches:
+                        errors.append(f'Operation code amounts mismatch: {"; ".join(mismatches)}')
 
         is_valid = not errors
 
@@ -376,6 +419,11 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
         * the amount in the forth column
       * A section for an organization completes with a row which contains
         "Общо: " in the first column and the total sum in the forth column
+
+    TODO:
+    * add logging handler to store logs in a file
+    * add test for validating sums by op-code
+    * check the code if it exhaust the iterator
     """
     # Load the xlsx file
     path_obj = Path(xlsx_path)
