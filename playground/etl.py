@@ -1,3 +1,4 @@
+import os
 import re
 import itertools
 
@@ -369,7 +370,9 @@ def _generate_org_id_from_name(name: Any) -> Optional[str]:
 def log_to_xlsx_dir(func):
     @wraps(func)
     def wrapper(xlsx_path, *args, **kwargs):
-        log_path = Path(xlsx_path).with_suffix('.log')
+        log_path = xlsx_path + '.log'
+        if os.path.exists(log_path):
+            os.unlink(log_path)
         logger = logging.getLogger(func.__module__)
 
         handler = logging.FileHandler(log_path, mode='a')
