@@ -1,11 +1,9 @@
-import os
 import re
-import shutil
+import itertools
 
 import pandas as pd
 import pyarrow as pa
 import hashlib
-import re
 import logging
 
 from decimal import Decimal, InvalidOperation, getcontext
@@ -272,6 +270,17 @@ def _is_org_header(text: Any) -> bool:
     return bool(re.search(r'\s*\(.*\)\s*$', text))
 
 
+def _is_org_continuation_row(row: Any) -> bool:
+    """Check if row is a continuation of org name (text only in first column, contains org ID, no period)."""
+    if not isinstance(row[0], str) or not row[0].strip():
+        return False
+    # Check if first column contains org ID pattern (parentheses)
+    if not bool(re.search(r'\(.*\)', row[0])):
+        return False
+    # Columns 1, 2, 3 should be empty/NaN
+    return all(pd.isna(v) or not str(v).strip() for v in row[1:])
+
+
 def _is_totals_row(text: Any) -> bool:
     """Check if text indicates a totals row."""
     if not isinstance(text, str):
@@ -439,10 +448,6 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
         * the amount in the forth column
       * A section for an organization completes with a row which contains
         "Общо: " in the first column and the total sum in the forth column
-
-    TODO:
-    * add logging handler to store logs in a file
-    * check the code if it exhaust the iterator
     """
     # Load the xlsx file
     path_obj = Path(xlsx_path)
@@ -557,7 +562,21 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
     # Now process organization sections
     org_sections = []
 
-    for _, row in row_iter:
+    # Some organization names span two rows like this:
+    #   - on the first row in the first column is the first part of the name,
+    #     the third column contains the period information
+    #   - the next row contains the remaining part of the name where the org id
+    #     is
+    #
+    # This fact requires sometimes to look ahead in the iterator.
+    # That's why instead of simple for loop over the iterator we need to
+    # walk it in while.
+    while True:
+        try:
+            _, row = next(row_iter)
+        except StopIteration:
+            break
+
         # Check if this is a new organization section
         # An org section starts with a row that has:
         # - Non-empty first column (org name)
@@ -567,19 +586,43 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
 
         if is_org_row or _is_org_header(row[0]):
             org_name, org_id = _parse_org_header(row[0])
+            org_period_col = row[2]
+
+            # Check for split org name across two rows
+            # If no org_id found and this is an org_row (has period), check next row
+            non_continuation_row = None
+            if org_id is None and is_org_row:
+                try:
+                    next_idx, next_row = next(row_iter)
+                    if _is_org_continuation_row(next_row):
+                        # Combine with next row's first column
+                        org_name_part2, org_id_part2 = _parse_org_header(next_row[0])
+                        org_name = f"{org_name} {org_name_part2}".strip()
+                        org_id = org_id_part2
+                    else:
+                        # Not a continuation, save it to process as first org row
+                        non_continuation_row = (next_idx, next_row)
+                except StopIteration:
+                    pass
 
             # Extract period from third column
-            org_start_date, org_end_date = _parse_period(row[2])
+            org_start_date, org_end_date = _parse_period(org_period_col)
 
-            # If no org_id from brackets, generate from name
+            # If no org_id from brackets or continuation, generate from name
             if org_id is None:
                 org_id = _generate_org_id_from_name(org_name)
 
             org_rows = []
             org_total = None
 
+            # If we have a non-continuation row, prepend it to the iterator
+            org_row_iter = itertools.chain(
+                [non_continuation_row] if non_continuation_row is not None else [],
+                row_iter
+            )
+
             # Process rows for this organization
-            for _, org_row in row_iter:
+            for _, org_row in org_row_iter:
                 # Check if this is the totals row for this org
                 if _is_totals_row(org_row[0]):
                     org_total = _parse_amount(org_row[3])
@@ -652,6 +695,7 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
                 ])
 
             if org_total is None:
+                logger.warning(f'[org section] Have not found totals row for organization {org_name}.')
                 org_total = Decimal('0')
 
             org_section = SebraSection(
@@ -666,7 +710,7 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
             continue
         elif _is_summary_header(row[0]):
             # This shouldn't happen, but skip
-            logger.warning(f'[summary section] Unexpected summary header in middle of file: {row[0]}, row={list(row)}')
+            logger.warning(f'[org section] Unexpected summary header in middle of file: {row[0]}, row={list(row)}')
             continue
         else:
             # Unexpected row, log and skip
