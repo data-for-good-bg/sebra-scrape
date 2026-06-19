@@ -79,9 +79,20 @@ class SebraSection:
         if self.total_sum == calculated_sum:
             return True, None
 
+        if not self.is_summary:
+            if not self.data.empty:
+                org_id = self.data['organization_id'].iloc[0]
+                org_name = self.data['organization_name'].iloc[0]
+                org_info = f'{org_id=}, {org_name=}'
+            else:
+                org_info = 'the data frame is empty, org info cannot be extracted.'
+        else:
+            org_info = ''
+
         return False, (f"is_summary={self.is_summary}, "
                        f"total_sum={self.total_sum}, "
-                       f"calculated_sum={calculated_sum}")
+                       f"calculated_sum={calculated_sum},"
+                       f' {org_info}')
 
 
 @dataclass
@@ -291,6 +302,25 @@ def _is_totals_row(text: Any) -> bool:
     return 'Общо:' in text.strip()
 
 
+def _is_na_or_empty(value: Any) -> bool:
+    return (
+        pd.isna(value) or
+        pd.isnull(value) or
+        (isinstance(value, str) and not value.strip())
+    )
+
+
+def _is_row_only_with_amount(row: Any) -> bool:
+    """Check if text indicates a totals row."""
+
+    return (
+        (isinstance(row[3], float)) and
+        _is_na_or_empty(row[0]) and
+        _is_na_or_empty(row[1]) and
+        _is_na_or_empty(row[2])
+    )
+
+
 def _is_header_row(row: Any) -> bool:
     """Check if row is a column header row (Код, Описание, Сума) or (Описание, Сума)."""
     if not isinstance(row[0], str):
@@ -326,7 +356,7 @@ def _parse_amount(value: Any) -> Optional[Decimal]:
         if isinstance(value, float):
             value_str = '{:.2f}'.format(value)
         else:
-            value_str = str(value).strip().replace(',', '.')
+            value_str = str(value).strip().replace(u'\xa0', '').replace(',', '.')
         return Decimal(value_str)
     except (InvalidOperation, ValueError, TypeError):
         logger.warning(f'Could not parse amount: {value}')
@@ -629,7 +659,7 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
             # Process rows for this organization
             for _, org_row in org_row_iter:
                 # Check if this is the totals row for this org
-                if _is_totals_row(org_row[0]):
+                if _is_totals_row(org_row[0]) or _is_row_only_with_amount(org_row):
                     org_total = _parse_amount(org_row[3])
                     if org_total is None:
                         logger.warning(f'[org section] Could not parse org total amount: {org_row[3]}, row={list(org_row)}')
@@ -657,6 +687,7 @@ def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
                         op_desc = org_row[1].strip()
                     else:
                         # Truly empty, skip
+                        logger.warning(f'[org section] Skipping truly empty row, row={list(org_row)}')
                         continue
                 else:
                     op_code_raw = org_row[0].strip()
