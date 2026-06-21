@@ -12,7 +12,7 @@ from typing import Optional
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from .gdrive import GoogleDriveUploader
+from gdrive import GoogleDriveUploader
 from .scrape import MinfinScraper, ScrapeDownloadResult
 
 logger = logging.getLogger(__name__)

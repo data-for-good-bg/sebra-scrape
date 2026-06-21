@@ -5,7 +5,7 @@ import logging
 import os
 import sys
 
-from .gdrive import GoogleDriveUploader, UnsuccessfulFile
+from gdrive import GoogleDriveUploader
 from .scenarios import collect_to_gdrive, collect_to_gdrive_for_days, download_for_date
 
 logger = logging.getLogger('sebra_scrape.app')

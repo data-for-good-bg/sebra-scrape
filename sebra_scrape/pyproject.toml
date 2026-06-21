@@ -5,7 +5,7 @@ description = "Scrape XLS files from minfin.bg transparency pages"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "google-api-python-client>=2.196.0",
+    "gdrive-lib",
     "requests>=2.34.2",
 ]
 
@@ -14,3 +14,6 @@ sebra-scrape = "sebra_scrape.app:main"
 
 [tool.setuptools]
 packages = [ "sebra_scrape" ]
+
+[tool.uv.sources]
+gdrive-lib = { path = "../gdrive_lib", editable = true }
