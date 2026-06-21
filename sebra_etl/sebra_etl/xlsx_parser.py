@@ -5,7 +5,6 @@ import re
 import itertools
 
 import pandas as pd
-import pyarrow as pa
 import hashlib
 import logging
 
@@ -423,6 +422,8 @@ def log_to_xlsx_dir(func):
 def parse_sebra_payments_xlsx(xlsx_path: str) -> SebraData:
     """
     Parses a xlsx file with SEBRA payments and returns SebraData.
+
+    This parser supports SEBRA-<date>.xlsx and SEBRA-MF-<date>.xlsx files.
 
     Parsing steps:
     * after the xlsx file is loaded into a pd.DataFrame,
